@@ -1,0 +1,214 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Marvel Watch Tracker</title>
+<link href="https://fonts.googleapis.com/css2?family=Anton&family=Bangers&family=Barlow:wght@400;600&display=swap" rel="stylesheet">
+<style>
+:root{box-sizing:border-box;--bg:#0c0d12;--panel:#171922;--ink:#f4f1e8;--mute:#9a9cae;--red:#e62429;--gold:#f7c600;color-scheme:dark;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+*{box-sizing:border-box}
+body{margin:0;color:var(--ink);font:400 16px/1.4 Barlow,system-ui,sans-serif;background:radial-gradient(circle at 1px 1px,rgba(255,255,255,.07) 1.2px,transparent 1.6px) 0 0/14px 14px,var(--bg)}
+.wrap{max-width:1000px;margin:0 auto;padding:22px 16px 70px}
+h1{display:inline-block;margin:6px 0 0;background:var(--red);color:#fff;font:400 clamp(32px,8vw,62px)/1 Anton,Impact,sans-serif;padding:6px 20px;letter-spacing:1px;text-transform:uppercase;border:3px solid #fff;box-shadow:6px 6px 0 #000;transform:rotate(-1.5deg)}
+.tag{margin:16px 0 22px;color:var(--gold);font:400 20px Bangers,cursive;letter-spacing:1.5px}
+.hero{background:#fff4d6;color:#14151b;border:4px solid #000;box-shadow:8px 8px 0 var(--ac,#e62429);padding:16px 18px;margin-bottom:26px}
+.hero .row{display:flex;flex-wrap:wrap;gap:8px 26px;align-items:center;margin-bottom:12px}
+.hero .big{font:400 72px/.9 Anton,Impact,sans-serif;color:var(--ac,#e62429);text-shadow:3px 3px 0 #000}
+.rank{font:400 24px Bangers,cursive;letter-spacing:1px;background:#000;color:var(--gold);padding:2px 12px;transform:rotate(-2deg)}
+.lbl{color:#5b5d6a;font-size:14px}
+.bar{height:20px;border:3px solid #000;background:#fff;overflow:hidden}
+.bar i{display:block;height:100%;background:repeating-linear-gradient(-45deg,var(--ac,#e62429) 0 10px,color-mix(in srgb,var(--ac,#e62429) 70%,#000) 10px 20px);transition:width .4s}
+.chips{display:flex;flex-wrap:wrap;gap:10px;margin-bottom:16px}
+.chip{font:400 17px Bangers,cursive;letter-spacing:1px;color:#fff;background:var(--c);border:2px solid #fff;padding:3px 14px;cursor:pointer;transform:skewX(-8deg);box-shadow:3px 3px 0 rgba(0,0,0,.7);transition:transform .12s}
+.chip:hover{transform:skewX(-8deg) translateY(-2px)}
+.chip[aria-pressed="true"]{background:#fff;color:#000;box-shadow:4px 4px 0 var(--c)}
+.chip small{margin-left:6px;font-size:13px;opacity:.85}
+.tools{display:flex;flex-wrap:wrap;gap:10px;align-items:center;margin-bottom:26px;color:var(--mute);font-size:14px}
+select,input[type=password]{font:inherit;color:var(--ink);background:#1d2030;border:2px solid #3a3f55;padding:6px 8px}
+input[type=password]{width:190px}
+#tb,#tc{font:400 16px Bangers,cursive;letter-spacing:1px;color:#000;background:var(--gold);border:2px solid #000;padding:5px 12px;cursor:pointer;box-shadow:3px 3px 0 #000}
+:focus-visible{outline:3px solid var(--gold);outline-offset:2px}
+section{margin-bottom:36px}
+.sh{display:flex;justify-content:space-between;align-items:flex-end;gap:10px;flex-wrap:wrap;margin-bottom:14px;border-bottom:3px solid var(--c);padding-bottom:6px}
+.sh h2{display:inline-block;margin:0 12px 0 0;background:var(--c);color:#fff;font:400 28px/1 Anton,Impact,sans-serif;text-transform:uppercase;padding:4px 22px 4px 12px;clip-path:polygon(0 0,100% 0,calc(100% - 12px) 100%,0 100%);text-shadow:2px 2px 0 rgba(0,0,0,.35)}
+.meta{color:var(--mute);font-size:14px}
+.ok{color:var(--gold);font:400 18px Bangers,cursive;letter-spacing:1px}
+.sh button{font:400 14px Bangers,cursive;letter-spacing:1px;color:var(--ink);background:none;border:2px solid #3a3f55;padding:2px 10px;cursor:pointer;margin-left:4px}
+.sh button:hover{border-color:var(--c)}
+.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:16px}
+.c{display:flex;flex-direction:column;background:var(--panel);border:2px solid #2b2e3d;transition:transform .15s,border-color .15s}
+.c:hover{transform:translateY(-4px) rotate(-.6deg);border-color:var(--c)}
+.pz{position:relative;aspect-ratio:3/4;background-size:cover;background-position:center;cursor:pointer;overflow:hidden;display:flex;align-items:flex-end;padding:8px}
+.pz .tt{font:400 20px/1 Anton,Impact,sans-serif;text-transform:uppercase;color:#fff;text-shadow:2px 2px 0 rgba(0,0,0,.5);overflow:hidden}
+.done .pz{box-shadow:inset 0 0 0 200px rgba(0,0,0,.5)}
+.stamp{position:absolute;left:50%;top:45%;transform:translate(-50%,-50%) rotate(-14deg) scale(.4);opacity:0;border:3px solid var(--gold);color:var(--gold);background:rgba(0,0,0,.78);font:400 20px Bangers,cursive;letter-spacing:2px;padding:0 10px;transition:.18s;pointer-events:none}
+.done .stamp{opacity:1;transform:translate(-50%,-50%) rotate(-14deg) scale(1)}
+.up{position:absolute;top:6px;right:6px;width:28px;height:28px;border:2px solid #000;background:var(--gold);color:#000;cursor:pointer;opacity:0;font-size:14px;padding:0;line-height:1}
+.c:hover .up,.up:focus-visible{opacity:1}
+@media(hover:none){.up{opacity:.85}}
+.in{padding:8px 9px 10px;display:flex;flex-direction:column;gap:3px}
+.n{font-weight:600;font-size:14px;line-height:1.2}
+.m{color:var(--mute);font-size:12.5px}
+.sns{display:flex;flex-wrap:wrap;gap:4px;margin-top:5px}
+.sn{font:400 14px Bangers,cursive;letter-spacing:.5px;min-width:30px;color:var(--ink);background:#23263a;border:2px solid #3a3f55;padding:0 6px;cursor:pointer}
+.sn.on{background:var(--c);border-color:#000;color:#fff}
+.ph{display:flex;flex-wrap:wrap;align-items:baseline;gap:4px 12px;margin:22px 0 12px}
+.ph h3{margin:0;font:400 22px Anton,Impact,sans-serif;text-transform:uppercase;border-left:6px solid var(--c);padding-left:10px}
+.phb button{font:400 13px Bangers,cursive;letter-spacing:1px;color:var(--ink);background:none;border:2px solid #3a3f55;padding:0 8px;cursor:pointer;margin-right:4px}
+.phb button:hover{border-color:var(--c)}
+.empty{grid-column:1/-1;color:var(--mute);padding:10px}
+footer{color:var(--mute);font-size:13px;margin-top:30px}
+@media(prefers-reduced-motion:reduce){*{transition:none!important}}
+</style></head><body><div class="wrap">
+<h1>Marvel Watch Tracker</h1>
+<p class="tag">Earth’s mightiest watchlist. Assemble every movie and show.</p>
+<div class="hero" id="hero"></div>
+<div class="chips" id="chips"></div>
+<div class="tools"><label for="st">Show</label><select id="st"><option value="all">Everything</option><option value="todo">Not finished</option><option value="part">In progress</option><option value="done">Finished</option></select><input id="tk" type="password" placeholder="TMDB API key (v3)" aria-label="TMDB API key"><button id="tb">Load posters</button><button id="tc" type="button">Copy poster data</button><span id="ts"></span></div>
+<input type="file" id="pf" accept="image/*" hidden>
+<main id="list"></main>
+<footer>Runtimes are approximate. Shows are tracked by season; hours left counts unchecked titles and seasons. Tap a poster to mark it watched, and the pencil to swap in your own poster. Progress and posters are saved in this browser. This product uses the TMDB API but is not endorsed or certified by TMDB.</footer>
+</div>
+<script>
+const CATS={mcu:['MCU','#e62429'],net:['Netflix','#3b6fd8'],abc:['ABC','#8b5cf6'],xmen:['X-Men','#e0a100'],anim:['Animation','#00a8e8'],sony:['Sony','#0e9f9d'],blade:['Blade Trilogy','#9b1d4a'],f4:['Fox Fantastic 4','#2a8f4f'],elek:['Fox Elektra & Daredevil','#d9480f'],fx:['FX','#5c6bc0'],cd:['Cloak & Dagger','#c026d3'],run:['Runaways','#e64980']};
+const D=[];
+const M=(c,t,m)=>D.push({c,t,u:[{m}]});
+const S=(c,t,e,eps)=>D.push({c,t,show:1,u:eps.map(n=>({m:n*e,n}))});
+// MCU films
+[['Iron Man',126],['The Incredible Hulk',112],['Iron Man 2',124],['Thor',115],['Captain America: The First Avenger',124],['The Avengers',143],['Iron Man 3',130],['Thor: The Dark World',112],['Captain America: The Winter Soldier',136],['Guardians of the Galaxy',121],['Avengers: Age of Ultron',141],['Ant-Man',117],['Captain America: Civil War',147],['Doctor Strange',115],['Guardians of the Galaxy Vol. 2',136],['Spider-Man: Homecoming',133],['Thor: Ragnarok',130],['Black Panther',134],['Avengers: Infinity War',149],['Ant-Man and the Wasp',118],['Captain Marvel',123],['Avengers: Endgame',181],['Spider-Man: Far From Home',129],['Black Widow',134],['Shang-Chi',132],['Eternals',156],['Spider-Man: No Way Home',148],['Doctor Strange in the Multiverse of Madness',126],['Werewolf by Night',53],['Thor: Love and Thunder',119],['Black Panther: Wakanda Forever',161],['The Guardians Holiday Special',44],['Ant-Man and the Wasp: Quantumania',125],['Guardians of the Galaxy Vol. 3',150],['The Marvels',105],['Deadpool & Wolverine',128],['Captain America: Brave New World',118],['Thunderbolts*',127],['The Fantastic Four: First Steps',115]].forEach(a=>M('mcu',...a));
+// MCU shows
+[['WandaVision',40,[9]],['The Falcon and the Winter Soldier',50,[6]],['Loki',47,[6,6]],['What If…?',32,[9,9,8]],['Hawkeye',46,[6]],['Moon Knight',46,[6]],['Ms. Marvel',42,[6]],['She-Hulk: Attorney at Law',33,[9]],['Secret Invasion',45,[6]],['Echo',43,[5]],['Agatha All Along',42,[9]],['Daredevil: Born Again',50,[9]],['Ironheart',45,[6]],['Eyes of Wakanda',30,[4]],['Marvel Zombies',30,[4]]].forEach(a=>S('mcu',...a));
+// Netflix
+[['Daredevil',54,[13,13,13]],['Jessica Jones',50,[13,13,13]],['Luke Cage',50,[13,13]],['Iron Fist',50,[13,10]],['The Defenders',50,[8]],['The Punisher',55,[13,13]]].forEach(a=>S('net',...a));
+// ABC
+S('abc','Agents of S.H.I.E.L.D.',43,[22,22,22,22,22,13,13]);S('abc','Agent Carter',43,[8,10]);S('abc','Inhumans',43,[8]);
+// X-Men
+[['X-Men',104],['X2',134],['X-Men: The Last Stand',104],['X-Men Origins: Wolverine',107],['X-Men: First Class',132],['The Wolverine',126],['X-Men: Days of Future Past',132],['Deadpool',108],['X-Men: Apocalypse',144],['Logan',137],['Deadpool 2',119],['Dark Phoenix',113],['The New Mutants',94]].forEach(a=>M('xmen',...a));
+S('anim','X-Men: The Animated Series',22,[13,13,19,21,10]);S('anim','X-Men ’97',35,[10,9]);S('anim','Your Friendly Neighborhood Spider-Man',25,[10]);
+// Sony
+[['Spider-Man (2002)',121],['Spider-Man 2',127],['Spider-Man 3',139],['The Amazing Spider-Man',136],['The Amazing Spider-Man 2',142],['Spider-Man: Into the Spider-Verse',117],['Spider-Man: Across the Spider-Verse',140],['Venom',112],['Venom: Let There Be Carnage',97],['Morbius',104],['Madame Web',116],['Kraven the Hunter',127],['Venom: The Last Dance',109]].forEach(a=>M('sony',...a));
+S('sony','Spider-Noir',45,[8]);
+// Blade, F4, Elektra
+[['Blade',120],['Blade II',117],['Blade: Trinity',113]].forEach(a=>M('blade',...a));
+[['Fantastic Four (2005)',106],['Fantastic Four: Rise of the Silver Surfer',92],['Fantastic Four (2015)',100]].forEach(a=>M('f4',...a));
+[['Daredevil (2003)',103],['Elektra',97]].forEach(a=>M('elek',...a));
+// FX, Cloak & Dagger
+S('fx','Legion',50,[8,11,8]);S('cd','Cloak & Dagger',45,[10,10]);S('run','Runaways',45,[10,13,10]);
+// MCU one-shots and specials
+[['The Consultant',3,1],['A Funny Thing Happened on the Way to Thor’s Hammer',3,1],['Item 47',11,1],['Agent Carter (One-Shot)',15,2],['All Hail the King',13,2],['Team Thor',3,3],['Team Thor: Part 2',4,3],['Team Darryl',6,3]].forEach(([t,m,p])=>{M('mcu',t,m);const d=D[D.length-1];d.tag='One-Shot';d.ph=p;d.q=t.startsWith('Team')?t:'Marvel One-Shot: '+t.replace(' (One-Shot)','')});
+D.forEach(it=>{if(it.t=='Werewolf by Night'||it.t=='The Guardians Holiday Special')it.tag='Special'});
+
+let st={};try{st=JSON.parse(localStorage.getItem('mvtrack2')||'null')||(()=>{const o=JSON.parse(localStorage.getItem('mvtrack')||'{}'),n={};Object.keys(o).forEach(q=>{const[a,b]=q.split('.');if(D[a])n[D[a].t+'|'+b]=1});return n})()}catch(e){}
+const save=()=>{try{localStorage.setItem('mvtrack2',JSON.stringify(st))}catch(e){}};
+let cat='all',open={};
+const f=m=>m<60?m+'m':Math.floor(m/60)+'h '+String(m%60).padStart(2,'0')+'m';
+const k=(i,j)=>D[i].t+'|'+j;
+const PHN=['','Phase One','Phase Two','Phase Three','Phase Four','Phase Five','Phase Six'];
+const PH={};
+[[1,['Iron Man','The Incredible Hulk','Iron Man 2','Thor','Captain America: The First Avenger','The Avengers']],
+[2,['Iron Man 3','Thor: The Dark World','Captain America: The Winter Soldier','Guardians of the Galaxy','Avengers: Age of Ultron','Ant-Man']],
+[3,['Captain America: Civil War','Doctor Strange','Guardians of the Galaxy Vol. 2','Spider-Man: Homecoming','Thor: Ragnarok','Black Panther','Avengers: Infinity War','Ant-Man and the Wasp','Captain Marvel','Avengers: Endgame','Spider-Man: Far From Home']],
+[4,['WandaVision','The Falcon and the Winter Soldier','Black Widow','Shang-Chi','Eternals','Hawkeye','Spider-Man: No Way Home','Moon Knight','Doctor Strange in the Multiverse of Madness','Ms. Marvel','Thor: Love and Thunder','She-Hulk: Attorney at Law','Werewolf by Night','Black Panther: Wakanda Forever','The Guardians Holiday Special']],
+[5,['Ant-Man and the Wasp: Quantumania','Secret Invasion','Guardians of the Galaxy Vol. 3','The Marvels','Echo','Deadpool & Wolverine','Agatha All Along','Daredevil: Born Again','Captain America: Brave New World','Thunderbolts*','Ironheart']],
+[6,['The Fantastic Four: First Steps','Eyes of Wakanda','Marvel Zombies']]].forEach(([p,a])=>a.forEach(t=>PH[t]=p));
+PH['Loki']=[4,5];PH['What If…?']=[4,5,5];
+D.forEach(it=>{if(it.ph)PH[it.t]=it.ph});
+const sub=(i,js)=>js||D[i].u.map((_,j)=>j);
+const ucalc=es=>{let t=0,d=0,fin=0;es.forEach(([i,js])=>{let all=true;sub(i,js).forEach(j=>{const m=D[i].u[j].m;t+=m;if(st[k(i,j)])d+=m;else all=false});if(all)fin++});return{t,d,n:es.length,fin,p:t?Math.round(d/t*100):0}};
+const ustate=e=>{const a=sub(e[0],e[1]),c=a.filter(j=>st[k(e[0],j)]).length;return c==a.length?'done':c?'part':'todo'};
+const phs=()=>{const o={};D.forEach((it,i)=>{if(it.c!='mcu')return;const v=PH[it.t];it.u.forEach((x,j)=>{const p=Array.isArray(v)?v[j]:v;o[p]=o[p]||{};(o[p][i]=o[p][i]||[]).push(j)})});return o};
+const calc=ids=>{let t=0,d=0,n=0,fin=0;ids.forEach(i=>{const u=D[i].u;let all=true;u.forEach((x,j)=>{t+=x.m;if(st[k(i,j)])d+=x.m;else all=false});n++;if(all)fin++});return{t,d,n,fin,p:t?Math.round(d/t*100):0}};
+const state=i=>{const u=D[i].u,c=u.filter((x,j)=>st[k(i,j)]).length;return c==u.length?'done':c?'part':'todo'};
+
+let PS={};try{PS=JSON.parse(localStorage.getItem('mvposter')||'{}')}catch(e){}
+let pend=null;
+const BAKED={};
+let TP={};try{TP=Object.assign({},BAKED,JSON.parse(localStorage.getItem('mvpath')||'{}'))}catch(e){TP=Object.assign({},BAKED)}
+const miss=()=>D.some(it=>!(PS[it.t]||it.t in TP));
+const tk=document.getElementById('tk');try{tk.value=localStorage.getItem('mvkey')||''}catch(e){}
+document.getElementById('tb').onclick=async()=>{
+  const key=tk.value.trim(),ts=document.getElementById('ts');
+  if(!key){ts.textContent='Enter your TMDB API key first.';return}
+  try{localStorage.setItem('mvkey',key)}catch(e){}
+  for(let i=0;i<D.length;i++){
+    const it=D[i];ts.textContent=(i+1)+'/'+D.length;
+    if(it.t in TP||PS[it.t])continue;
+    const m=it.t.match(/\((\d{4})\)/),q=it.q||it.t.replace(/\s*\(\d{4}\)/,'').replace('’',"'").replace('*','').replace('…','');
+    try{
+      const r=await fetch('https://api.themoviedb.org/3/search/'+(it.show?'tv':'movie')+'?api_key='+key+'&query='+encodeURIComponent(q)+(m?'&year='+m[1]:''));
+      if(r.status==401){ts.textContent='Invalid API key.';return}
+      const j=await r.json(),h=(j.results||[]).find(x=>x.poster_path);
+      TP[it.t]=h?h.poster_path:'';
+    }catch(e){ts.textContent='Network error.';break}
+    if(i%10==9){try{localStorage.setItem('mvpath',JSON.stringify(TP))}catch(e){}render()}
+  }
+  try{localStorage.setItem('mvpath',JSON.stringify(TP))}catch(e){}
+  render();ts.textContent='Done. Tap a tile to fix any wrong poster.';
+};
+if(tk.value&&miss())setTimeout(()=>document.getElementById('tb').click(),300);
+const rk=p=>p>=100?'Omniscient Watcher':p>=75?'Cosmic-level Hero':p>=50?'Earth’s Mightiest':p>=25?'Avenger in Training':p>0?'Rookie Recruit':'Civilian';
+const pf=document.getElementById('pf');
+document.addEventListener('click',e=>{const b=e.target.closest('[data-p]');if(b){pend=D[b.dataset.p].t;pf.value='';pf.click()}});
+pf.addEventListener('change',()=>{const fl=pf.files[0];if(!fl||!pend)return;const r=new FileReader();r.onload=()=>{const im=new Image();im.onload=()=>{const c=document.createElement('canvas');c.width=240;c.height=360;const x=c.getContext('2d'),s=Math.max(240/im.width,360/im.height),w=im.width*s,h=im.height*s;x.drawImage(im,(240-w)/2,(360-h)/2,w,h);PS[pend]=c.toDataURL('image/jpeg',.8);try{localStorage.setItem('mvposter',JSON.stringify(PS))}catch(e){}render()};im.src=r.result};r.readAsDataURL(fl)});
+function row(e){
+  const i=e[0],it=D[i],u=it.u,a=sub(i,e[1]),c=ucalc([e]),dn=a.filter(j=>st[k(i,j)]).length,done=dn==a.length;
+  const img=PS[it.t]||(TP[it.t]?'https://image.tmdb.org/t/p/w342'+TP[it.t]:'');
+  const bg=img?`background-image:url('${img}')`:`background-image:linear-gradient(160deg,${CATS[it.c][1]},#10111a)`;
+  const sns=it.show?`<div class="sns">${a.map(j=>`<button class="sn ${st[k(i,j)]?'on':''}" data-sk="${k(i,j)}" title="${u[j].n} eps · ${f(u[j].m)}" aria-pressed="${!!st[k(i,j)]}">S${j+1}</button>`).join('')}</div>`:'';
+  return `<article class="c ${done?'done':''}"><div class="pz" role="button" tabindex="0" data-tg="${i}" data-js="${a.join(',')}" aria-pressed="${done}" aria-label="Toggle watched: ${it.t}" style="${bg}">${img?'':`<span class="tt">${it.t}</span>`}<b class="stamp">${it.show?'DONE!':'WATCHED'}</b><button class="up" data-p="${i}" aria-label="Change poster for ${it.t}">✎</button></div><div class="in"><span class="n">${it.t}</span><span class="m">${it.show?dn+'/'+a.length+' seasons · '+f(c.t-c.d)+' left':(it.tag?it.tag+' · ':'')+f(u[0].m)}</span>${sns}</div></article>`;
+}
+
+function render(){
+  const bt=document.getElementById('tb'),cp=document.getElementById('tc');
+  tk.style.display=bt.style.display=miss()?'':'none';
+  cp.style.display=Object.keys(TP).some(t=>!(t in BAKED))?'':'none';
+  const flt=document.getElementById('st').value;
+  const all=D.map((_,i)=>i);
+  const scope=cat=='all'?all:all.filter(i=>D[i].c==cat);
+  const s=calc(scope),col=cat=='all'?'#e62429':CATS[cat][1];
+  const hero=document.getElementById('hero');hero.style.setProperty('--ac',col);
+  hero.innerHTML=`<div class="row"><span class="big">${s.p}%</span><span class="rank">${rk(s.p)}</span><span><b>${f(s.t-s.d)}</b> <span class="lbl">of heroics left</span></span><span><b>${s.fin}/${s.n}</b> <span class="lbl">titles cleared</span></span></div><div class="bar"><i style="width:${s.p}%"></i></div><div class="lbl" style="margin-top:6px">${cat=='all'?'All categories':CATS[cat][0]}</div>`;
+  document.getElementById('chips').innerHTML=[['all',['All','#555a70']],...Object.entries(CATS)].map(([id,[n,c]])=>{const p=calc(id=='all'?all:all.filter(i=>D[i].c==id)).p;return `<button class="chip" style="--c:${c}" data-cat="${id}" aria-pressed="${cat==id}">${n}<small>${p}%</small></button>`}).join('');
+  let h='';
+  Object.keys(CATS).filter(c=>cat=='all'||cat==c).forEach(c=>{
+    const ids=all.filter(i=>D[i].c==c),cs=calc(ids);
+    let gs=[{es:ids.map(i=>[i])}];
+    if(c=='mcu'){const o=phs();gs=[1,2,3,4,5,6].map(p=>({p,es:Object.entries(o[p]||{}).map(([i,js])=>[+i,js])}))}
+    let body='';
+    gs.forEach(g=>{
+      const sh=g.es.filter(e=>flt=='all'||ustate(e)==flt||(flt=='todo'&&ustate(e)=='part'));
+      if(!sh.length)return;
+      if(g.p){const gc=ucalc(g.es);body+=`<div class="ph"><h3>${PHN[g.p]}</h3><span class="meta">${gc.p}% · ${gc.fin}/${gc.n} finished · ${f(gc.t-gc.d)} left</span><span class="phb"><button data-bp="${g.p}:1">Mark phase</button><button data-bp="${g.p}:0">Clear</button></span></div>`}
+      body+=`<div class="grid">${sh.map(row).join('')}</div>`;
+    });
+    h+=`<section style="--c:${CATS[c][1]}"><div class="sh"><div><h2>${CATS[c][0]}</h2><span class="meta">${cs.p==100?'<b class="ok">ASSEMBLED!</b> ':''}${cs.p}% · ${cs.fin}/${cs.n} finished · ${f(cs.t-cs.d)} left</span></div><div><button data-bulk="${c}:1">Mark all watched</button><button data-bulk="${c}:0">Clear</button></div></div>${body||'<div class="grid"><div class="empty">Nothing matches this filter.</div></div>'}</section>`;
+  });
+  document.getElementById('list').innerHTML=h;
+}
+document.addEventListener('change',e=>{
+  const t=e.target,d=t.dataset;
+  if(d.k){t.checked?st[d.k]=1:delete st[d.k]}
+  else if(d.all!=null){D[d.all].u.forEach((x,j)=>{t.checked?st[k(d.all,j)]=1:delete st[k(d.all,j)]})}
+  else if(t.id=='st'){}
+  else return;
+  save();render();
+});
+document.addEventListener('click',e=>{
+  const b=e.target.closest('button');if(!b)return;
+  if(b.dataset.cat){cat=b.dataset.cat;render()}
+  else if(b.dataset.bulk){const[c,v]=b.dataset.bulk.split(':');D.forEach((it,i)=>{if(it.c==c)it.u.forEach((x,j)=>{v=='1'?st[k(i,j)]=1:delete st[k(i,j)]})});save();render()}
+});
+document.addEventListener('toggle',e=>{if(e.target.dataset&&e.target.dataset.i!=null)open[e.target.dataset.i]=e.target.open},true);
+document.addEventListener('click',e=>{
+  if(e.target.closest('[data-p]'))return;
+  const bp=e.target.closest('[data-bp]');
+  if(bp){const[q,v]=bp.dataset.bp.split(':');Object.entries(phs()[q]||{}).forEach(([i,js])=>js.forEach(j=>{if(v=='1')st[k(i,j)]=1;else delete st[k(i,j)]}));save();render();return}
+  const b=e.target.closest('[data-sk]'),p=e.target.closest('[data-tg]');
+  if(b){const x=b.dataset.sk;if(st[x])delete st[x];else st[x]=1}
+  else if(p){const i=+p.dataset.tg,js=p.dataset.js.split(',').map(Number),on=js.every(j=>st[k(i,j)]);js.forEach(j=>{if(on)delete st[k(i,j)];else st[k(i,j)]=1})}
+  else return;
+  save();render();
+});
+document.getElementById('tc').onclick=()=>{const j=JSON.stringify(TP),ts=document.getElementById('ts');navigator.clipboard.writeText(j).then(()=>{ts.textContent='Copied. Paste it to Claude or into BAKED in the file.'}).catch(()=>prompt('Copy this poster data:',j))};
+document.addEventListener('keydown',e=>{if((e.key=='Enter'||e.key==' ')&&e.target.dataset&&e.target.dataset.tg!=null){e.preventDefault();e.target.click()}});
+render();
+</script></body></html>
