@@ -877,6 +877,74 @@
         animation: none!important;
       }
     }
+
+    /* ---- Mobile: compact rank badge beside the percentage, full-width medal shelf ---- */
+    @media (max-width: 600px) {
+      .hero {
+        padding: 12px 12px;
+      }
+      .hero .row {
+        flex-wrap: wrap;
+        gap: 6px 14px;
+        align-items: center;
+      }
+      .hero .big {
+        font-size: 44px;
+        flex: 0 0 auto;
+      }
+      .rk {
+        gap: 8px;
+        min-width: 0;
+        flex: 1 1 150px;
+      }
+      .rk .emb {
+        width: 38px;
+        height: 44px;
+      }
+      .rk .emb::before {
+        inset: 3px;
+      }
+      .rk .ic {
+        font-size: 19px;
+      }
+      .rk .tx {
+        gap: 2px;
+        min-width: 0;
+      }
+      .rk .nm {
+        font-size: 16px;
+        padding: 2px 8px;
+        letter-spacing: .8px;
+        white-space: nowrap;
+      }
+      .rk .pips {
+        gap: 3px;
+      }
+      .rk .pips i {
+        width: 12px;
+        height: 5px;
+        border-width: 1.5px;
+      }
+      .rk .nx {
+        font-size: 10.5px;
+        line-height: 1.15;
+      }
+
+      .shelf {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(72px, 1fr));
+        gap: 6px 4px;
+        padding: 12px 10px 14px;
+        margin-bottom: 20px;
+      }
+      .shelf .shl {
+        grid-column: 1 / -1;
+      }
+      .medal {
+        width: 100%;
+        min-width: 0;
+      }
+    }
   </style>
 </head>
 <body>
