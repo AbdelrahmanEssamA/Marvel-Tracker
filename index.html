@@ -1068,13 +1068,10 @@
       mcu:   ['MCU', '#e62429'],
       net:   ['Netflix', '#3b6fd8'],
       abc:   ['ABC', '#8b5cf6'],
-      xmen:  ['X-Men', '#e0a100'],
+      fox:   ['Fox', '#e0a100'],
       anim:  ['Animation', '#00a8e8'],
       sony:  ['Sony', '#0e9f9d'],
       blade: ['Blade Trilogy', '#9b1d4a'],
-      f4:    ['Fox Fantastic 4', '#2a8f4f'],
-      elek:  ['Fox Elektra & Daredevil', '#d9480f'],
-      fx:    ['FX', '#5c6bc0'],
       run:   ['Other Marvel', '#e64980'],
     };
 
@@ -1083,13 +1080,10 @@
       mcu:   ['Master of the MCU', '🛡️'],
       net:   ['Street-Level Hero', '🥊'],
       abc:   ['Agent of S.H.I.E.L.D.', '🦅'],
-      xmen:  ['Xavier’s School', '🧬'],
+      fox:   ['Fox Marvel Veteran', '🦊'],
       anim:  ['Saturday Morning Hero', '📺'],
-      sony:  ['Sony Spider-Verse Traveler', '🕸️'],
+      sony:  ['Sony Marvel Collector', '🕸️'],
       blade: ['Daywalker', '🗡️'],
-      f4:    ['Flame On', '🔥'],
-      elek:  ['Hell’s Kitchen Vigilante', '😈'],
-      fx:    ['Mind Over Matter', '🧠'],
       run:   ['Completionist', '🦆'],
     };
 
@@ -1112,7 +1106,18 @@
       ['asm',   'Amazing Spider-Man'],
       ['verse', 'Spider-Verse'],
       ['villn', 'Villains'],
+      ['ghost', 'Ghost Rider'],
     ];
+
+    // The Fox category is split the same way: [id, name]
+    const FOX_SUBS = [
+      ['xmen', 'X-Men'],
+      ['f4',   'Fantastic Four'],
+      ['dd',   'Daredevil & Elektra'],
+    ];
+
+    // category id -> its sub-sections
+    const SUBS = { sony: SONY_SUBS, fox: FOX_SUBS };
 
 
     // ---------------------------------------------------------------------
@@ -1237,7 +1242,7 @@
       ['Deadpool 2', 119],
       ['Dark Phoenix', 113],
       ['The New Mutants', 94],
-    ].forEach(([title, minutes]) => addMovie('xmen', title, minutes));
+    ].forEach(([title, minutes]) => addMovie('fox', title, minutes, 'xmen'));
 
     // Animation shows  [title, minutes per episode, episodes in each season]
     [
@@ -1276,6 +1281,12 @@
       ['Venom: The Last Dance', 109],
     ].forEach(([title, minutes]) => addMovie('sony', title, minutes, 'villn'));
 
+    // Ghost Rider films
+    [
+      ['Ghost Rider', 110],
+      ['Ghost Rider: Spirit of Vengeance', 96],
+    ].forEach(([title, minutes]) => addMovie('sony', title, minutes, 'ghost'));
+
     // Spider-Verse shows  [title, minutes per episode, episodes in each season]
     [
       ['Spider-Noir', 45, [8]],
@@ -1293,18 +1304,13 @@
       ['Fantastic Four (2005)', 106],
       ['Fantastic Four: Rise of the Silver Surfer', 92],
       ['Fantastic Four (2015)', 100],
-    ].forEach(([title, minutes]) => addMovie('f4', title, minutes));
+    ].forEach(([title, minutes]) => addMovie('fox', title, minutes, 'f4'));
 
     // Fox Elektra and Daredevil films
     [
       ['Daredevil (2003)', 103],
       ['Elektra', 97],
-    ].forEach(([title, minutes]) => addMovie('elek', title, minutes));
-
-    // FX shows  [title, minutes per episode, episodes in each season]
-    [
-      ['Legion', 50, [8, 11, 8]],
-    ].forEach(([title, minutesPerEpisode, seasons]) => addShow('fx', title, minutesPerEpisode, seasons));
+    ].forEach(([title, minutes]) => addMovie('fox', title, minutes, 'dd'));
 
     // Other Marvel and films
     [
@@ -1315,6 +1321,7 @@
     [
       ['Runaways', 45, [10, 13, 10]],
       ['Cloak & Dagger', 45, [10, 10]],
+      ['Legion', 50, [8, 11, 8]],
     ].forEach(([title, minutesPerEpisode, seasons]) => addShow('run', title, minutesPerEpisode, seasons));
 
     // MCU one-shots and short specials  [title, minutes, phase]
@@ -1574,8 +1581,8 @@
     }
 
     // Entries in one Sony sub-section as [itemIndex, partIndexes] pairs
-    const sonyEntries = id => items
-      .map((item, i) => (item.cat === 'sony' && item.sub === id) ? [i, item.parts.map((_, j) => j)] : null)
+    const subEntries = (cat, id) => items
+      .map((item, i) => (item.cat === cat && item.sub === id) ? [i, item.parts.map((_, j) => j)] : null)
       .filter(Boolean);
 
     // Entries in one phase as [itemIndex, partIndexes] pairs
@@ -1607,10 +1614,10 @@
         }
       }
 
-      SONY_SUBS.forEach(([id]) => {
-        const entries = sonyEntries(id);
-        if (entries.length && statsForEntries(entries).finished === entries.length) set.add('sony:' + id);
-      });
+      Object.keys(SUBS).forEach(cat => SUBS[cat].forEach(([id]) => {
+        const entries = subEntries(cat, id);
+        if (entries.length && statsForEntries(entries).finished === entries.length) set.add(cat + ':' + id);
+      }));
       return set;
     }
 
@@ -1689,7 +1696,6 @@
       "The Punisher": "/tM6xqRKXoloH9UchaJEyyRE9O1w.jpg",
       "Agents of S.H.I.E.L.D.": "/gHUCCMy1vvj58tzE3dZqeC9SXus.jpg",
       "Agent Carter": "/7kqIsjjDMZA5GRMH5VCdQYZJqc6.jpg",
-      "X-Men": "/bRDAc4GogyS9ci3ow7UnInOcriN.jpg",
       "X-Men: The Last Stand": "/a2xicU8DpKtRizOHjQLC1JyCSRS.jpg",
       "X-Men Origins: Wolverine": "/yj8LbTju1p7CUJg7US2unSBk33s.jpg",
       "X-Men: First Class": "/hNEokmUke0dazoBhttFN0o3L7Xv.jpg",
@@ -1746,8 +1752,11 @@
       "I Am Groot": "/lYwFSsP4KsoRhOLhJvBFp3GEGEm.jpg",
       "The Gifted": "/nshCqszjTNuqhrB53vrSqWO18sE.jpg",
       "Howard the Duck": "/30tnH0hy6S5FjGCfCdnkBd3wqS2.jpg",
+      "X-Men": "/bRDAc4GogyS9ci3ow7UnInOcriN.jpg",
       "X-Men: Apocalypse": "/ikA8UhYdTGpqbatFa93nIf6noSr.jpg",
       "The Amazing Spider-Man 2": "/bU7nTmvmy0h3VUP01v1T2imgH6N.jpg",
+      "Ghost Rider": "/4quwR1VwZouD0YF9AaD72kQAjxH.jpg",
+      "Ghost Rider: Spirit of Vengeance": "/xEoBT6lYfQNpSpTm8gJMTrQytiw.jpg",
     };
 
     // Search hints for titles TMDB finds badly by name alone
@@ -2004,7 +2013,7 @@
 
     function phaseHeaderHTML(key, phase, entries, isComplete, isCollapsed) {
       const stats = statsForEntries(entries);
-      const name = PHASE_NAMES[phase] || (SONY_SUBS.find(([id]) => id === phase) || [])[1];
+      const name = PHASE_NAMES[phase] || ((SUBS[key.split(':')[0]] || []).find(([id]) => id === phase) || [])[1];
       const doneText = PHASE_NAMES[phase] ? '★ PHASE COMPLETE ★' : '★ COMPLETE ★';
       return `<div class="ph ${isComplete ? 'done' : ''}" data-key="${key}">`
         + `<h3><button type="button" class="cl" data-col="${key}" aria-expanded="${!isCollapsed}"><span class="chev">${isCollapsed ? '▸' : '▾'}</span>${name}</button></h3>`
@@ -2124,8 +2133,8 @@
           }
         }
 
-        if (cat === 'sony') {
-          groups = SONY_SUBS.map(([id]) => ({ phase: id, entries: sonyEntries(id) }));
+        if (SUBS[cat]) {
+          groups = SUBS[cat].map(([id]) => ({ phase: id, entries: subEntries(cat, id) }));
         }
 
         let body = '';
@@ -2224,7 +2233,8 @@
       const phaseButton = e.target.closest('[data-bp]');
       if (phaseButton) {
         const [phase, value] = phaseButton.dataset.bp.split(':');
-        const entries = /^\d+$/.test(phase) ? phaseEntries(mcuEntriesByPhase(), phase) : sonyEntries(phase);
+        const subCat = Object.keys(SUBS).find(c => SUBS[c].some(([id]) => id === phase));
+        const entries = /^\d+$/.test(phase) ? phaseEntries(mcuEntriesByPhase(), phase) : subEntries(subCat, phase);
         entries.forEach(([i, js]) => {
           js.forEach(j => setWatched(i, j, value === '1'));
         });
