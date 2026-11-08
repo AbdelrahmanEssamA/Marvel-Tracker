@@ -498,6 +498,12 @@
       color: var(--mute);
       font-size: 14px;
     }
+    .mshort {
+      display: none;
+    }
+    .sh .shl2 .ok {
+      margin-right: 10px;
+    }
     .ok {
       color: var(--gold);
       font: 400 18px Bangers, cursive;
@@ -943,6 +949,74 @@
       .medal {
         width: 100%;
         min-width: 0;
+      }
+
+      /* Section header: smaller name, and "Assemble!" instead of the long medal name, so it stays on one line */
+      .sh h2 {
+        font-size: 18px;
+        padding: 4px 16px 4px 8px;
+        margin-right: 8px;
+        white-space: nowrap;
+      }
+      .sh .cl {
+        gap: 5px;
+        white-space: nowrap;
+      }
+      .meta {
+        font-size: 12px;
+        white-space: nowrap;
+      }
+      .mfull {
+        display: none;
+      }
+      .mshort {
+        display: inline;
+      }
+      .sh .shl2 {
+        flex: 1 1 100%;
+        min-width: 0;
+        display: flex;
+        flex-wrap: wrap;
+        align-items: center;
+        gap: 6px 0;
+      }
+      .sh .shl2 h2 {
+        order: 1;
+      }
+      .sh .shl2 .ok {
+        order: 2;
+        margin-left: auto;
+        margin-right: 0;
+        font-size: 19px;
+      }
+      .sh .shl2 .meta {
+        order: 3;
+        flex: 0 0 100%;
+      }
+      .micon,
+      .mstar {
+        display: none;
+      }
+      section.complete .ok {
+        font-size: 19px;
+        padding: 6px 18px 4px 18px;
+        margin-right: 0;
+        color: #fff;
+        background: linear-gradient(100deg, #f7c600, #fff, #ff7a7a, #f7c600) 0 0/300% 100%;
+        animation: shine 2s linear infinite;
+        border: 0;
+        transform: none;
+        box-shadow: none;
+        clip-path: polygon(12px 0, 100% 0, 100% 100%, 0 100%);
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        text-align: center;
+        line-height: 1;
+        text-shadow: 1px 1px 0 #000, -1px 1px 0 #000, 1px -1px 0 #000, -1px -1px 0 #000, 2px 2px 0 #000;
+      }
+      section.complete {
+        padding: 12px 10px 4px;
       }
     }
   </style>
@@ -1908,15 +1982,16 @@
     function sectionHTML(cat, body, stats, isComplete, isCollapsed) {
       const [label, color] = CATEGORIES[cat];
       const [medalName, medalIcon] = MEDALS[cat];
-      const medalText = isComplete ? `<b class="ok">${medalIcon} ${medalName} ★</b> ` : '';
+      const medalText = isComplete ? `<b class="ok"><span class="micon">${medalIcon} </span><span class="mfull">${medalName}</span><span class="mshort">Assemble!</span><span class="mstar"> ★</span></b> ` : '';
       const content = isCollapsed
         ? ''
         : body || '<div class="grid"><div class="empty">Nothing matches this filter.</div></div>';
 
       return `<section class="${isComplete ? 'complete' : ''}" style="--c:${color}">`
-        + `<div class="sh" data-key="${cat}"><div>`
+        + `<div class="sh" data-key="${cat}"><div class="shl2">`
         + `<h2><button type="button" class="cl" data-col="cat:${cat}" aria-expanded="${!isCollapsed}"><span class="chev">${isCollapsed ? '▸' : '▾'}</span>${label}</button></h2>`
-        + `<span class="meta">${medalText}${stats.percent}% · ${stats.finished}/${stats.count} finished · ${formatTime(stats.left)} left</span>`
+        + medalText
+        + `<span class="meta">${stats.percent}% · ${stats.finished}/${stats.count} finished · ${formatTime(stats.left)} left</span>`
         + `</div><div><button data-bulk="${cat}:1">Mark all watched</button><button data-bulk="${cat}:0">Clear</button></div></div>`
         + content
         + `</section>`;
