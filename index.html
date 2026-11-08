@@ -1085,7 +1085,7 @@
       abc:   ['Agent of S.H.I.E.L.D.', '🦅'],
       xmen:  ['Xavier’s School', '🧬'],
       anim:  ['Saturday Morning Hero', '📺'],
-      sony:  ['Friendly Neighborhood Hero', '🕷️'],
+      sony:  ['Sony Spider-Verse Traveler', '🕸️'],
       blade: ['Daywalker', '🗡️'],
       f4:    ['Flame On', '🔥'],
       elek:  ['Hell’s Kitchen Vigilante', '😈'],
@@ -1106,6 +1106,14 @@
     const PHASE_NAMES = ['', 'Phase One', 'Phase Two', 'Phase Three', 'Phase Four', 'Phase Five', 'Phase Six'];
     const LAST_PHASE = 6;
 
+    // The Sony category is one section split into sub-sections: [id, name]
+    const SONY_SUBS = [
+      ['raimi', 'Sam Raimi'],
+      ['asm',   'Amazing Spider-Man'],
+      ['verse', 'Spider-Verse'],
+      ['villn', 'Villains'],
+    ];
+
 
     // ---------------------------------------------------------------------
     // The watchlist
@@ -1117,13 +1125,14 @@
 
     const items = [];
 
-    function addMovie(cat, title, minutes) {
-      items.push({ cat, title, isShow: false, parts: [{ minutes }] });
+    function addMovie(cat, title, minutes, sub) {
+      items.push({ cat, sub, title, isShow: false, parts: [{ minutes }] });
     }
 
-    function addShow(cat, title, minutesPerEpisode, episodesPerSeason) {
+    function addShow(cat, title, minutesPerEpisode, episodesPerSeason, sub) {
       items.push({
         cat,
+        sub,
         title,
         isShow: true,
         parts: episodesPerSeason.map(episodes => ({ minutes: episodes * minutesPerEpisode, episodes })),
@@ -1238,27 +1247,39 @@
       ['Hit-Monkey', 25, [10, 10]],
     ].forEach(([title, minutesPerEpisode, seasons]) => addShow('anim', title, minutesPerEpisode, seasons));
 
-    // Sony films
+    // Sam Raimi Spider-Man films
     [
       ['Spider-Man (2002)', 121],
       ['Spider-Man 2', 127],
       ['Spider-Man 3', 139],
+    ].forEach(([title, minutes]) => addMovie('sony', title, minutes, 'raimi'));
+
+    // Amazing Spider-Man films
+    [
       ['The Amazing Spider-Man', 136],
       ['The Amazing Spider-Man 2', 142],
+    ].forEach(([title, minutes]) => addMovie('sony', title, minutes, 'asm'));
+
+    // Spider-Verse films
+    [
       ['Spider-Man: Into the Spider-Verse', 117],
       ['Spider-Man: Across the Spider-Verse', 140],
+    ].forEach(([title, minutes]) => addMovie('sony', title, minutes, 'verse'));
+
+    // Sony villain films
+    [
       ['Venom', 112],
       ['Venom: Let There Be Carnage', 97],
       ['Morbius', 104],
       ['Madame Web', 116],
       ['Kraven the Hunter', 127],
       ['Venom: The Last Dance', 109],
-    ].forEach(([title, minutes]) => addMovie('sony', title, minutes));
+    ].forEach(([title, minutes]) => addMovie('sony', title, minutes, 'villn'));
 
-    // Sony shows  [title, minutes per episode, episodes in each season]
+    // Spider-Verse shows  [title, minutes per episode, episodes in each season]
     [
       ['Spider-Noir', 45, [8]],
-    ].forEach(([title, minutesPerEpisode, seasons]) => addShow('sony', title, minutesPerEpisode, seasons));
+    ].forEach(([title, minutesPerEpisode, seasons]) => addShow('sony', title, minutesPerEpisode, seasons, 'verse'));
 
     // Blade films
     [
@@ -1552,6 +1573,11 @@
       return phases;
     }
 
+    // Entries in one Sony sub-section as [itemIndex, partIndexes] pairs
+    const sonyEntries = id => items
+      .map((item, i) => (item.cat === 'sony' && item.sub === id) ? [i, item.parts.map((_, j) => j)] : null)
+      .filter(Boolean);
+
     // Entries in one phase as [itemIndex, partIndexes] pairs
     const phaseEntries = (phases, phase) =>
       Object.entries(phases[phase] || {}).map(([i, js]) => [+i, js]);
@@ -1580,6 +1606,11 @@
           if (stats.finished === stats.count) set.add('mcu:' + phase);
         }
       }
+
+      SONY_SUBS.forEach(([id]) => {
+        const entries = sonyEntries(id);
+        if (entries.length && statsForEntries(entries).finished === entries.length) set.add('sony:' + id);
+      });
       return set;
     }
 
@@ -1973,9 +2004,11 @@
 
     function phaseHeaderHTML(key, phase, entries, isComplete, isCollapsed) {
       const stats = statsForEntries(entries);
+      const name = PHASE_NAMES[phase] || (SONY_SUBS.find(([id]) => id === phase) || [])[1];
+      const doneText = PHASE_NAMES[phase] ? '★ PHASE COMPLETE ★' : '★ COMPLETE ★';
       return `<div class="ph ${isComplete ? 'done' : ''}" data-key="${key}">`
-        + `<h3><button type="button" class="cl" data-col="${key}" aria-expanded="${!isCollapsed}"><span class="chev">${isCollapsed ? '▸' : '▾'}</span>${PHASE_NAMES[phase]}</button></h3>`
-        + (isComplete ? '<span class="badge">★ PHASE COMPLETE ★</span>' : '')
+        + `<h3><button type="button" class="cl" data-col="${key}" aria-expanded="${!isCollapsed}"><span class="chev">${isCollapsed ? '▸' : '▾'}</span>${name}</button></h3>`
+        + (isComplete ? `<span class="badge">${doneText}</span>` : '')
         + `<span class="meta">${stats.percent}% · ${stats.finished}/${stats.count} finished · ${formatTime(stats.left)} left</span>`
         + `<span class="phb"><button data-bp="${phase}:1">Mark phase</button><button data-bp="${phase}:0">Clear</button></span>`
         + `</div>`;
@@ -2091,6 +2124,10 @@
           }
         }
 
+        if (cat === 'sony') {
+          groups = SONY_SUBS.map(([id]) => ({ phase: id, entries: sonyEntries(id) }));
+        }
+
         let body = '';
         groups.forEach(group => {
           const visible = group.entries.filter(entry => {
@@ -2187,7 +2224,8 @@
       const phaseButton = e.target.closest('[data-bp]');
       if (phaseButton) {
         const [phase, value] = phaseButton.dataset.bp.split(':');
-        Object.entries(mcuEntriesByPhase()[phase] || {}).forEach(([i, js]) => {
+        const entries = /^\d+$/.test(phase) ? phaseEntries(mcuEntriesByPhase(), phase) : sonyEntries(phase);
+        entries.forEach(([i, js]) => {
           js.forEach(j => setWatched(i, j, value === '1'));
         });
         saveWatched();
