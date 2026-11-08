@@ -1019,6 +1019,36 @@
         padding: 12px 10px 4px;
       }
     }
+  
+    /* ---- Expand arrows: drawn with CSS so they sit exactly in the middle of the heading ---- */
+    .sh .cl, .ph .cl, .shl .cl {
+      align-items: center;
+    }
+    .sh .chev, .ph .chev, .shl .chev {
+      position: relative;
+      display: inline-block;
+      flex: none;
+      width: 1em;
+      height: 1em;
+      font-size: .8em;
+      overflow: hidden;
+      text-indent: -9999px;
+      white-space: nowrap;
+    }
+    .sh .chev::before, .ph .chev::before, .shl .chev::before {
+      content: "";
+      position: absolute;
+      left: 50%;
+      top: 50%;
+      border-left: .38em solid transparent;
+      border-right: .38em solid transparent;
+      border-top: .5em solid currentColor;
+      transform: translate(-50%, -50%);
+      transition: transform .15s;
+    }
+    .cl[aria-expanded="false"] .chev::before {
+      transform: translate(-50%, -50%) rotate(-90deg);
+    }
   </style>
 </head>
 <body>
