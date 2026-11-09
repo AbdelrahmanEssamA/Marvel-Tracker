@@ -4,7 +4,7 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
   <title>Marvel Watch Tracker</title>
-  <link href="https://fonts.googleapis.com/css2?family=Anton&family=Bangers&family=Barlow:wght@400;600&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Bangers&family=Barlow:wght@400;600;700&display=swap" rel="stylesheet">
   <style>
     /* ---- Page, theme colors and title ---- */
     :root {
@@ -14,7 +14,8 @@
       --ink: #f4f1e8;
       --mute: #9a9cae;
       --red: #e62429;
-      --gold: #f7c600;
+      --gold: #f7c600;   /* reserved for achievements: earned medals, finished titles, completed sections */
+      --focus: #4cc2ff;
       color-scheme: dark;
       padding-top: env(safe-area-inset-top, 0px);
       padding-bottom: env(safe-area-inset-bottom, 0px);
@@ -31,14 +32,14 @@
     .wrap {
       max-width: 1000px;
       margin: 0 auto;
-      padding: 22px 16px 70px;
+      padding: 24px 16px 72px;
     }
     h1 {
       display: inline-block;
       margin: 6px 0 0;
       background: var(--red);
       color: #fff;
-      font: 400 clamp(32px, 8vw, 62px)/1 Anton, Impact, sans-serif;
+      font: 400 clamp(32px, 8vw, 62px)/1 Bangers, Impact, sans-serif;
       padding: 6px 20px;
       letter-spacing: 1px;
       text-transform: uppercase;
@@ -48,9 +49,9 @@
     }
     .tag {
       margin: 16px 0 22px;
-      color: var(--gold);
-      font: 400 20px Bangers, cursive;
-      letter-spacing: 1.5px;
+      color: var(--mute);
+      font: 600 18px Barlow, system-ui, sans-serif;
+      letter-spacing: .3px;
     }
 
     /* ---- Progress box at the top ---- */
@@ -60,17 +61,18 @@
       border: 4px solid #000;
       box-shadow: 8px 8px 0 var(--ac, #e62429);
       padding: 16px 18px;
-      margin-bottom: 26px;
+      margin-bottom: 24px;
     }
     .hero .row {
       display: flex;
       flex-wrap: wrap;
-      gap: 8px 26px;
+      gap: 16px 24px;
       align-items: center;
-      margin-bottom: 12px;
+      justify-content: space-between;
+      margin-bottom: 24px;
     }
     .hero .big {
-      font: 400 72px/.9 Anton, Impact, sans-serif;
+      font: 400 72px/.9 Bangers, Impact, sans-serif;
       color: var(--ac, #e62429);
       text-shadow: 3px 3px 0 #000;
     }
@@ -83,100 +85,162 @@
       transform: rotate(-2deg);
     }
 
-    /* ---- Rank badge (changes tier as you watch more) ---- */
+    /* ---- Rank badge: 10 levels, each with its own colours, shape and effects ---- */
     .rk {
       display: inline-flex;
       align-items: center;
-      gap: 12px;
+      gap: 14px;
       --t: #6b6e80;
       --t2: #3c3e4c;
-      transform: rotate(-2deg);
+      --shape: polygon(50% 0, 100% 14%, 100% 60%, 50% 100%, 0 60%, 0 14%);
     }
-    .rk[data-t="1"] {
-      --t: #e0954a;
-      --t2: #7a4a14;
+    .rk[data-t="1"] { --t: #e0954a; --t2: #7a4a14; }
+    .rk[data-t="2"] { --t: #6fa0ec; --t2: #1d3a73; }
+    .rk[data-t="3"] { --t: #e6ebf5; --t2: #7d8699; }
+    .rk[data-t="4"] { --t: #35d6c0; --t2: #0b5d63; }
+    .rk[data-t="5"] { --t: #ffd23f; --t2: #c08a00; }
+    .rk[data-t="6"] { --t: #c084fc; --t2: #3b1d8f; }
+    .rk[data-t="7"] { --t: #ff5a6e; --t2: #7a0f2e; }
+    .rk[data-t="8"] { --t: #ffa23c; --t2: #8a2a00; }
+    .rk[data-t="9"] { --t: #fff; --t2: #e62429; }
+    .rk[data-t="5"], .rk[data-t="6"], .rk[data-t="7"] {
+      --shape: polygon(50% 0, 64% 11%, 100% 11%, 100% 62%, 50% 100%, 0 62%, 0 11%, 36% 11%);
     }
-    .rk[data-t="2"] {
-      --t: #e6ebf5;
-      --t2: #7d8699;
-    }
-    .rk[data-t="3"] {
-      --t: #ffd23f;
-      --t2: #c08a00;
-    }
-    .rk[data-t="4"] {
-      --t: #c084fc;
-      --t2: #3b1d8f;
-    }
-    .rk[data-t="5"] {
-      --t: #fff;
-      --t2: #e62429;
+    .rk[data-t="8"], .rk[data-t="9"] {
+      --shape: polygon(50% 0, 62% 14%, 88% 8%, 86% 34%, 100% 52%, 76% 66%, 50% 100%, 24% 66%, 0 52%, 14% 34%, 12% 8%, 38% 14%);
     }
     .rk .eg {
+      position: relative;
+      isolation: isolate;
+      display: grid;
+      place-items: center;
+      margin: 0 4px;
       filter: drop-shadow(2px 3px 0 rgba(0, 0, 0, .45));
     }
-    .rk[data-t="3"] .eg {
-      filter: drop-shadow(0 0 7px var(--t)) drop-shadow(2px 3px 0 rgba(0, 0, 0, .4));
+    /* soft aura behind the emblem (fades in from level 6) */
+    .rk .eg::before {
+      content: "";
+      position: absolute;
+      z-index: -1;
+      inset: -16px;
+      border-radius: 50%;
+      background: radial-gradient(circle, var(--t) 0, transparent 66%);
+      opacity: 0;
     }
-    .rk[data-t="4"] .eg {
-      animation: rkpulse 2s ease-in-out infinite;
+    .rk[data-t="5"] .eg::before, .rk[data-t="6"] .eg::before, .rk[data-t="7"] .eg::before,
+    .rk[data-t="8"] .eg::before, .rk[data-t="9"] .eg::before {
+      opacity: .45;
+      animation: rkglow 2.4s ease-in-out infinite;
     }
-    .rk[data-t="5"] .eg {
-      animation: rkpulse 1.4s ease-in-out infinite;
+    .rk[data-t="9"] .eg::before {
+      background: conic-gradient(from var(--ang), #e62429, #f7c600, #2a8f4f, #00a8e8, #8b5cf6, #e64980, #e62429);
+      filter: blur(8px);
+      animation: spin 3s linear infinite, rkglow 1.6s ease-in-out infinite;
+    }
+    /* rotating rune ring (levels 9 and 10) */
+    .rk[data-t="8"] .eg::after, .rk[data-t="9"] .eg::after {
+      content: "";
+      position: absolute;
+      inset: -9px -7px;
+      border-radius: 50%;
+      border: 2px dashed var(--t);
+      animation: rkspin 9s linear infinite;
+    }
+    .rk[data-t="9"] .eg::after {
+      border: 3px dotted #fff;
+      animation-duration: 6s;
     }
     .rk .emb {
       position: relative;
-      width: 60px;
-      height: 68px;
+      width: 64px;
+      height: 72px;
       display: grid;
       place-items: center;
       background: #000;
-      clip-path: polygon(50% 0, 100% 14%, 100% 60%, 50% 100%, 0 60%, 0 14%);
+      clip-path: var(--shape);
     }
     .rk .emb::before {
       content: "";
       position: absolute;
       inset: 4px;
-      clip-path: inherit;
+      clip-path: var(--shape);
       background: linear-gradient(160deg, var(--t), var(--t2));
     }
-    .rk[data-t="4"] .emb::before {
-      background: radial-gradient(circle at 30% 25%, #fff8 0 6%, transparent 7%), radial-gradient(circle at 70% 60%, #fff8 0 4%, transparent 5%), radial-gradient(circle at 45% 75%, #fff6 0 3%, transparent 4%), linear-gradient(160deg, var(--t), var(--t2));
+    /* comic halftone dots + a diagonal glint */
+    .rk .emb::after {
+      content: "";
+      position: absolute;
+      inset: 4px;
+      clip-path: var(--shape);
+      background:
+        linear-gradient(115deg, rgba(255, 255, 255, .5) 0 20%, transparent 21%),
+        radial-gradient(circle, rgba(0, 0, 0, .22) 1px, transparent 1.6px) 0 0 / 5px 5px;
     }
-    .rk[data-t="5"] .emb::before {
+    .rk[data-t="0"] .emb::after {
+      background: radial-gradient(circle, rgba(0, 0, 0, .25) 1px, transparent 1.6px) 0 0 / 5px 5px;
+    }
+    .rk[data-t="6"] .emb::before {
+      background:
+        radial-gradient(circle at 30% 25%, #fff 0 5%, transparent 6%),
+        radial-gradient(circle at 72% 58%, #fff 0 4%, transparent 5%),
+        radial-gradient(circle at 46% 78%, #fffa 0 3%, transparent 4%),
+        radial-gradient(circle at 80% 22%, #fffc 0 3%, transparent 4%),
+        linear-gradient(160deg, var(--t), var(--t2));
+    }
+    .rk[data-t="7"] .emb::before {
+      background: radial-gradient(circle at 50% 42%, #ffd0d6 0 10%, var(--t) 36%, var(--t2) 100%);
+    }
+    .rk[data-t="8"] .emb::before {
+      background: radial-gradient(circle at 50% 50%, #ffe2a8 0 12%, var(--t) 40%, var(--t2) 100%);
+    }
+    .rk[data-t="9"] .emb::before {
       background: conic-gradient(from var(--ang), #e62429, #f7c600, #2a8f4f, #00a8e8, #8b5cf6, #e64980, #e62429);
       animation: spin 3s linear infinite;
     }
     .rk .ic {
       position: relative;
       z-index: 1;
-      font: 400 30px/1 Anton, Impact, sans-serif;
+      font: 400 31px/1 Bangers, Impact, sans-serif;
       color: #fff;
-      text-shadow: 2px 2px 0 rgba(0, 0, 0, .55);
+      text-shadow: 2px 2px 0 rgba(0, 0, 0, .6);
     }
-    .rk[data-t="2"] .ic, .rk[data-t="3"] .ic {
+    .rk[data-t="3"] .ic, .rk[data-t="5"] .ic {
       color: #14151b;
-      text-shadow: 1px 1px 0 rgba(255, 255, 255, .5);
+      text-shadow: 1px 1px 0 rgba(255, 255, 255, .55);
+    }
+    /* level tag under the emblem */
+    .rk .lv {
+      position: absolute;
+      left: 50%;
+      bottom: -10px;
+      transform: translateX(-50%);
+      z-index: 2;
+      font: 700 11.5px/1 Barlow, system-ui, sans-serif;
+      letter-spacing: .5px;
+      white-space: nowrap;
+      color: var(--t);
+      background: #000;
+      padding: 2px 8px 1px;
+      box-shadow: 2px 2px 0 var(--t2);
     }
     .rk .tx {
       display: flex;
       flex-direction: column;
-      gap: 3px;
+      gap: 4px;
     }
     .rk .nm {
-      font: 400 25px/1 Bangers, cursive;
+      font: 400 22px/1 Bangers, cursive;
       letter-spacing: 1.2px;
       background: #000;
       color: var(--t);
       padding: 2px 12px;
-      transform: skewX(-8deg);
       box-shadow: 3px 3px 0 var(--t2);
     }
-    .rk[data-t="3"] .nm, .rk[data-t="4"] .nm {
+    .rk[data-t="5"] .nm, .rk[data-t="6"] .nm, .rk[data-t="7"] .nm, .rk[data-t="8"] .nm {
       background: linear-gradient(100deg, #000 35%, #2b2b36 50%, #000 65%) 0 0/250% 100%;
       animation: shine 3s linear infinite;
     }
-    .rk[data-t="5"] .nm {
+    .rk[data-t="9"] .nm {
       background: linear-gradient(100deg, #000 30%, #3a1d4a 50%, #000 70%) 0 0/250% 100%;
       animation: shine 2s linear infinite;
       color: #fff;
@@ -184,24 +248,36 @@
     }
     .rk .pips {
       display: flex;
-      gap: 4px;
+      gap: 3px;
     }
     .rk .pips i {
-      width: 18px;
-      height: 7px;
+      width: 17px;
+      height: 8px;
       border: 2px solid #000;
       background: #fff;
-      transform: skewX(-20deg);
     }
     .rk .pips i.on {
       background: var(--t);
       box-shadow: 0 0 0 1px #000;
     }
+    .rk .pips i.cur {
+      background: #fff;
+      box-shadow: 0 0 0 1px #000, 0 0 6px 1px var(--t);
+      outline: 2px solid var(--t);
+      outline-offset: 0;
+    }
     .rk .nx {
       font-size: 12.5px;
       color: #5b5d6a;
     }
-    .rk.up {
+    @keyframes rkglow {
+      0%, 100% { opacity: .3; }
+      50% { opacity: .75; }
+    }
+    @keyframes rkspin {
+      to { transform: rotate(360deg); }
+    }
+    .rk.rk-up {
       animation: rkup 1.1s cubic-bezier(.2, .9, .3, 1.4);
     }
     @keyframes rkpulse {
@@ -214,36 +290,78 @@
     }
     @keyframes rkup {
       0% {
-        transform: rotate(-2deg) scale(.4);
-        filter: brightness(2.4);
+        transform: scale(.4);
       }
       45% {
-        transform: rotate(6deg) scale(1.3);
-        filter: brightness(1.8) drop-shadow(0 0 22px var(--t));
+        transform: scale(1.3);
       }
       100% {
-        transform: rotate(-2deg) scale(1);
-        filter: none;
+        transform: scale(1);
       }
     }
 
     /* ---- Medal shelf ---- */
     .shelf {
-      display: flex;
-      flex-wrap: wrap;
-      gap: 6px 10px;
       margin: 0 0 24px;
-      padding: 12px 14px 14px;
-      background: rgba(255, 255, 255, .05);
-      border: 3px solid var(--gold);
-      box-shadow: 4px 4px 0 #000;
+      padding: 12px 14px 8px;
+      background: var(--panel);
+      border: 4px solid #000;
+      box-shadow: 0 0 0 2px #3a3f55;
+    }
+    /* medals sit in one swipeable row */
+    .shelf .mrow {
+      display: flex;
+      gap: 10px;
+      overflow-x: auto;
+      padding: 12px 2px 12px;
+      scroll-snap-type: x proximity;
+      scrollbar-width: thin;
+      scrollbar-color: #3a3f55 transparent;
+      -webkit-overflow-scrolling: touch;
+    }
+    .shelf .mrow .medal {
+      flex: none;
+      scroll-snap-align: start;
+    }
+    /* fade the edge where more medals are hiding */
+    .shelf .mrow.fade-r {
+      -webkit-mask-image: linear-gradient(90deg, #000 calc(100% - 48px), transparent);
+      mask-image: linear-gradient(90deg, #000 calc(100% - 48px), transparent);
+    }
+    .shelf .mrow.fade-l {
+      -webkit-mask-image: linear-gradient(90deg, transparent, #000 40px);
+      mask-image: linear-gradient(90deg, transparent, #000 40px);
+    }
+    .shelf .mrow.fade-l.fade-r {
+      -webkit-mask-image: linear-gradient(90deg, transparent, #000 40px, #000 calc(100% - 48px), transparent);
+      mask-image: linear-gradient(90deg, transparent, #000 40px, #000 calc(100% - 48px), transparent);
+    }
+    .shl .swipe {
+      display: none;
+      margin-left: auto;
+      font: 700 12px/1 Barlow, system-ui, sans-serif;
+      letter-spacing: .3px;
+      color: var(--mute);
+    }
+    @media (max-width: 700px) {
+      .shelf.scrolls .shl .swipe {
+        display: block;
+      }
     }
     .shl {
       width: 100%;
-      font: 400 18px Bangers, cursive;
-      letter-spacing: 1.5px;
-      color: var(--gold);
+      font: 400 24px/1.1 Bangers, cursive;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      color: var(--ink);
       margin-bottom: 4px;
+    }
+    .shl small {
+      font: 600 13px Barlow, system-ui, sans-serif;
+      text-transform: none;
+      letter-spacing: 0;
+      color: var(--mute);
+      margin-left: 6px;
     }
     .shl .cl {
       font: inherit;
@@ -320,8 +438,8 @@
     }
     .medal .mn {
       margin-top: 12px;
-      font: 400 13px/1.1 Bangers, cursive;
-      letter-spacing: .6px;
+      font: 700 12.5px/1.15 Barlow, system-ui, sans-serif;
+      letter-spacing: .2px;
       text-align: center;
       color: var(--mute);
     }
@@ -335,8 +453,7 @@
       opacity: 1;
       border-color: var(--gold);
       background: radial-gradient(circle at 32% 28%, rgba(255, 255, 255, .55), transparent 42%), linear-gradient(145deg, var(--c), #000 170%);
-      box-shadow: 0 0 0 2px #000, 0 0 18px -2px var(--gold);
-      animation: rkpulse 2.4s ease-in-out infinite;
+      box-shadow: 0 0 0 2px #000, 0 0 8px -3px color-mix(in srgb, var(--gold) 55%, transparent);
     }
     .medal.on .mn {
       color: var(--gold);
@@ -360,40 +477,570 @@
       color: #5b5d6a;
       font-size: 14px;
     }
-    .bar {
-      height: 20px;
+    /* ---- Progress bar: slim comic bar, white track, halftone fill ---- */
+    .pbar {
+      position: relative;
+      height: 24px;
       border: 3px solid #000;
-      background: #fff;
+      background:
+        radial-gradient(circle, rgba(0, 0, 0, .08) 1px, transparent 1.6px) 0 0 / 6px 6px,
+        #fff;
       overflow: hidden;
     }
-    .bar i {
+    .pbar i {
       display: block;
       height: 100%;
-      background: repeating-linear-gradient(-45deg, var(--ac, #e62429) 0 10px, color-mix(in srgb, var(--ac, #e62429) 70%, #000) 10px 20px);
+      background:
+        linear-gradient(180deg, rgba(255, 255, 255, .3), transparent 50%, rgba(0, 0, 0, .18)),
+        radial-gradient(circle, rgba(0, 0, 0, .2) 1px, transparent 1.6px) 0 0 / 5px 5px,
+        var(--ac, #e62429);
+      border-right: 3px solid #000;
       transition: width .4s;
+    }
+    .pbar.zero i,
+    .pbar.full i {
+      border-right: 0;
+    }
+    .pbar.full i {
+      background:
+        linear-gradient(180deg, rgba(255, 255, 255, .3), transparent 50%, rgba(0, 0, 0, .18)),
+        linear-gradient(90deg, #e62429, #f7c600, #2a8f4f, #00a8e8, #8b5cf6, #e64980);
+    }
+
+    /* ---- Sticky mini progress bar (shows once the big progress box scrolls away) ---- */
+    .stk {
+      position: fixed;
+      left: 0;
+      right: 0;
+      top: 0;
+      z-index: 50;
+      display: block;
+      width: 100%;
+      padding: env(safe-area-inset-top, 0px) 0 0;
+      text-align: left;
+      font: inherit;
+      color: #14151b;
+      background: #fff4d6;
+      border: 0;
+      border-bottom: 3px solid #000;
+      cursor: pointer;
+      transform: translateY(-120%);
+      transition: transform .22s ease;
+    }
+    .stk.on {
+      transform: none;
+    }
+    .stk .si {
+      width: 100%;
+      max-width: 1000px;
+      margin: 0 auto;
+      padding: 8px 16px;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+    .stk .rk {
+      flex: none;
+      margin: 0;
+    }
+    .stk .rk .eg {
+      margin: 0;
+      filter: none;
+    }
+    .stk .rk .eg::before,
+    .stk .rk .eg::after {
+      display: none;
+    }
+    .stk .rk .emb {
+      width: 30px;
+      height: 34px;
+    }
+    .stk .rk .emb::before,
+    .stk .rk .emb::after {
+      inset: 2px;
+    }
+    .stk .rk .ic {
+      font-size: 15px;
+    }
+    .stk .who {
+      flex: 0 1 auto;
+      min-width: 0;
+      max-width: 42%;
+      display: flex;
+      flex-direction: column;
+      gap: 2px;
+    }
+    .stk .who b {
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+      font: 400 19px/1 Bangers, cursive;
+      letter-spacing: 1px;
+      color: #14151b;
+    }
+    .stk .who small {
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+      font: 700 11.5px/1 Barlow, system-ui, sans-serif;
+      color: #5b5d6a;
+    }
+    .stk .tr {
+      flex: 1;
+      min-width: 60px;
+    }
+    .stk .tr .pbar {
+      height: 16px;
+      border-width: 2px;
+    }
+    .stk .tr .pbar i {
+      border-right-width: 2px;
+    }
+    .stk .pc {
+      flex: none;
+      min-width: 3ch;
+      text-align: center;
+      font: 700 19px/1 Barlow, system-ui, sans-serif;
+      color: var(--ac, #e62429);
+    }
+    @media (max-width: 700px) {
+      .stk .gt {
+        display: none;
+      }
+      .stk .si {
+        gap: 8px;
+        padding: 8px 12px;
+      }
+      .stk .who {
+        max-width: 46%;
+      }
+      .stk .who b {
+        font-size: 17px;
+      }
+    }
+    .stk .gt {
+      flex: none;
+      display: grid;
+      place-items: center;
+      width: 30px;
+      height: 30px;
+      font-size: 12px;
+      line-height: 1;
+      color: #fff;
+      background: #14151b;
+    }
+    @media (max-width: 700px) {
+      .stk .gt {
+        display: none;
+      }
+    }
+
+    /* ---- Undo toast ---- */
+    .toast {
+      position: fixed;
+      left: 50%;
+      bottom: calc(16px + env(safe-area-inset-bottom, 0px));
+      z-index: 70;
+      display: flex;
+      align-items: center;
+      gap: 14px;
+      width: max-content;
+      max-width: calc(100vw - 24px);
+      padding: 10px 14px;
+      color: var(--ink);
+      background: var(--panel);
+      border: 4px solid #000;
+      box-shadow: 0 0 0 2px #3a3f55;
+      transform: translate(-50%, 160%);
+      transition: transform .22s ease;
+    }
+    .toast.on {
+      transform: translate(-50%, 0);
+    }
+    .toast span {
+      font-size: 15px;
+    }
+    .toast button {
+      font: 700 15px/1 Barlow, system-ui, sans-serif;
+      letter-spacing: .5px;
+      color: #000;
+      background: #fff;
+      border: 0;
+      padding: 10px 16px;
+      cursor: pointer;
+    }
+
+    /* ---- Comic burst panel for big moments ---- */
+    .pow {
+      position: fixed;
+      left: 50%;
+      top: 40%;
+      z-index: 80;
+      pointer-events: none;
+      transform: translate(-50%, -50%);
+      animation: powin 2.1s both;
+    }
+    .pow .bst {
+      position: relative;
+      width: min(86vw, 420px);
+      aspect-ratio: 1.2;
+      display: grid;
+      place-items: center;
+      background: #000;
+      clip-path: polygon(50.0% 0.0%, 58.0% 14.9%, 71.7% 5.0%, 72.4% 21.9%, 89.1% 18.8%, 82.4% 34.4%, 98.7% 38.9%, 86.0% 50.0%, 98.7% 61.1%, 82.4% 65.6%, 89.1% 81.2%, 72.4% 78.1%, 71.7% 95.0%, 58.0% 85.1%, 50.0% 100.0%, 42.0% 85.1%, 28.3% 95.0%, 27.6% 78.1%, 10.9% 81.2%, 17.6% 65.6%, 1.3% 61.1%, 14.0% 50.0%, 1.3% 38.9%, 17.6% 34.4%, 10.9% 18.8%, 27.6% 21.9%, 28.3% 5.0%, 42.0% 14.9%);
+    }
+    .pow .bst::before {
+      content: "";
+      position: absolute;
+      inset: 7px;
+      clip-path: polygon(50.0% 0.0%, 58.0% 14.9%, 71.7% 5.0%, 72.4% 21.9%, 89.1% 18.8%, 82.4% 34.4%, 98.7% 38.9%, 86.0% 50.0%, 98.7% 61.1%, 82.4% 65.6%, 89.1% 81.2%, 72.4% 78.1%, 71.7% 95.0%, 58.0% 85.1%, 50.0% 100.0%, 42.0% 85.1%, 28.3% 95.0%, 27.6% 78.1%, 10.9% 81.2%, 17.6% 65.6%, 1.3% 61.1%, 14.0% 50.0%, 1.3% 38.9%, 17.6% 34.4%, 10.9% 18.8%, 27.6% 21.9%, 28.3% 5.0%, 42.0% 14.9%);
+      background:
+        radial-gradient(circle, rgba(0, 0, 0, .16) 1.2px, transparent 1.8px) 0 0 / 7px 7px,
+        var(--pc, #f7c600);
+    }
+    .pow .tx {
+      position: relative;
+      text-align: center;
+      white-space: nowrap;
+    }
+    .pow b {
+      display: block;
+      font: 400 clamp(28px, 9vw, 54px)/.95 Bangers, cursive;
+      letter-spacing: 2px;
+      color: #fff;
+      -webkit-text-stroke: 2px #000;
+      paint-order: stroke fill;
+      text-shadow: 3px 3px 0 #000;
+    }
+    .pow small {
+      display: block;
+      margin-top: 6px;
+      font: 400 clamp(14px, 4vw, 20px)/1.1 Bangers, cursive;
+      letter-spacing: 1px;
+      color: #000;
+    }
+    @keyframes powin {
+      0% { opacity: 0; transform: translate(-50%, -50%) scale(.2) rotate(-10deg); }
+      12% { opacity: 1; transform: translate(-50%, -50%) scale(1.15) rotate(3deg); }
+      22% { opacity: 1; transform: translate(-50%, -50%) scale(1) rotate(0); }
+      80% { opacity: 1; transform: translate(-50%, -50%) scale(1); }
+      100% { opacity: 0; transform: translate(-50%, -50%) scale(1.12); }
+    }
+    @media (prefers-reduced-motion: reduce) {
+      .pow { animation: powfade 2.1s both; }
+      .stk, .toast { transition: none; }
+    }
+    @keyframes powfade {
+      0%, 85% { opacity: 1; transform: translate(-50%, -50%); }
+      100% { opacity: 0; transform: translate(-50%, -50%); }
+    }
+
+    /* ---- Phase accent colours ---- */
+
+
+    /* ---- Less clutter up top: gear toggle, filter + swipeable chips, one-line stats ---- */
+    .tagrow {
+      display: flex;
+      align-items: flex-start;
+      justify-content: space-between;
+      gap: 12px;
+    }
+    .tagrow .tag {
+      margin-right: 0;
+    }
+    .psb {
+      position: relative;
+      flex: none;
+      width: 40px;
+      height: 40px;
+      margin-top: 8px;
+      padding: 0;
+      font-size: 20px;
+      line-height: 1;
+      color: var(--ink);
+      background: none;
+      border: 2px solid #3a3f55;
+      cursor: pointer;
+    }
+    .psb:hover,
+    .psb[aria-expanded="true"] {
+      border-color: var(--ink);
+    }
+    .psb.need::after {
+      content: "";
+      position: absolute;
+      top: -5px;
+      right: -5px;
+      width: 12px;
+      height: 12px;
+      border-radius: 50%;
+      background: var(--red);
+      border: 2px solid var(--bg);
+    }
+    .tools[hidden] {
+      display: none;
+    }
+    .nav {
+      display: flex;
+      align-items: flex-start;
+      gap: 8px;
+      margin-bottom: 16px;
+    }
+    .nav select {
+      flex: none;
+    }
+    .nav .chips {
+      flex: 1;
+      min-width: 0;
+      margin: 0;
+      position: relative;
+      flex-wrap: nowrap;
+      overflow-x: auto;
+      padding: 2px 8px 8px 2px;
+      scrollbar-width: none;
+      -webkit-overflow-scrolling: touch;
+    }
+    .nav .chips::-webkit-scrollbar {
+      display: none;
+    }
+    .nav .chip {
+      flex: none;
+      white-space: nowrap;
+    }
+    @media (min-width: 701px) {
+      .nav .chips {
+        flex-wrap: wrap;
+        overflow: visible;
+      }
+    }
+    .hero .sts {
+      display: flex;
+      margin-left: auto;
+    }
+    .hero .st {
+      padding: 0 22px;
+      text-align: center;
+      border-left: 2px solid rgba(20, 21, 27, .2);
+    }
+    .hero .st b {
+      display: block;
+      white-space: nowrap;
+      font: 700 22px/1.1 Barlow, system-ui, sans-serif;
+      color: #14151b;
+    }
+    .hero .st:first-child b {
+      color: var(--ac, #e62429);
+    }
+    .hero .st .lbl {
+      display: block;
+      margin-top: 2px;
+      font-size: 12.5px;
+    }
+    @media (max-width: 600px) {
+      .hero .sts {
+        flex: none;
+        width: 100%;
+        display: grid;
+        grid-template-columns: repeat(3, 1fr);
+        margin: 0;
+        padding-top: 14px;
+        border-top: 2px solid rgba(20, 21, 27, .2);
+      }
+      .hero .st {
+        padding: 0 6px;
+      }
+      .hero .st:first-child {
+        border-left: 0;
+      }
+      .hero .st b {
+        font-size: 17px;
+        white-space: nowrap;
+      }
+      .hero .st .lbl {
+        font-size: 12px;
+      }
+      .pbar {
+        height: 22px;
+      }
+    }
+
+    /* ---- Header progress line, kebab menu ---- */
+    .sh .kb, .ph .kb {
+      width: 44px;
+      height: 40px;
+      padding: 0;
+      margin: 0;
+      font: 700 20px/1 Barlow, system-ui, sans-serif;
+      letter-spacing: 1px;
+      color: var(--ink);
+      background: none;
+      border: 2px solid #3a3f55;
+      cursor: pointer;
+    }
+    .sh .kb:hover, .ph .kb:hover,
+    .sh .kb[aria-expanded="true"], .ph .kb[aria-expanded="true"] {
+      border-color: var(--ink);
+    }
+    .ph .phb {
+      margin-left: auto;
+    }
+    .menu {
+      position: fixed;
+      z-index: 75;
+      min-width: 200px;
+      background: var(--panel);
+      border: 3px solid #000;
+      box-shadow: 0 0 0 2px #3a3f55;
+    }
+    .menu[hidden] {
+      display: none;
+    }
+    .menu button {
+      display: block;
+      width: 100%;
+      min-height: 46px;
+      padding: 12px 16px;
+      text-align: left;
+      font: 600 15px Barlow, system-ui, sans-serif;
+      color: var(--ink);
+      background: none;
+      border: 0;
+      cursor: pointer;
+    }
+    .menu button + button {
+      border-top: 1px solid #2b2e3d;
+    }
+    .menu button:hover,
+    .menu button:focus-visible {
+      background: #23263a;
+    }
+    .menu .danger {
+      color: #ff8a8a;
+    }
+
+    /* ---- Medals: earned + closest ones, locked medals show a progress ring ---- */
+    .shl {
+      display: flex;
+      align-items: baseline;
+      gap: 6px;
+    }
+    .medal:not(.on) .md {
+      filter: none;
+      opacity: 1;
+      border: 4px solid transparent;
+      background:
+        linear-gradient(#23263a, #23263a) padding-box,
+        conic-gradient(var(--c) calc(var(--p, 0) * 1%), #3a3f55 0) border-box;
+    }
+    .medal:not(.on) .md::after {
+      background: #3a3f55;
+    }
+    .medal:not(.on) .mi {
+      opacity: .75;
+    }
+
+
+    /* ---- Masthead: slim comic-cover title over muted speed lines ---- */
+    .masthead {
+      position: relative;
+      margin: 0 0 24px;
+      padding: 12px 18px 12px;
+      background:
+        linear-gradient(90deg, transparent 40%, rgba(0, 0, 0, .45)),
+        radial-gradient(circle, rgba(0, 0, 0, .22) 1.2px, transparent 1.8px) 0 0 / 7px 7px,
+        repeating-conic-gradient(from 0deg at 12% 55%, #bd1a1f 0 5deg, #a8161b 5deg 10deg);
+      border: 4px solid #000;
+      box-shadow: 0 0 0 2px #3a3f55;
+      overflow: hidden;
+    }
+    .masthead h1 {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      gap: 2px 14px;
+      margin: 0;
+      padding: 0;
+      background: none;
+      border: 0;
+      box-shadow: none;
+      transform: rotate(-1deg);
+      transform-origin: left center;
+      font: 400 clamp(34px, 9vw, 58px)/1 Bangers, cursive;
+      letter-spacing: 2px;
+      color: #fff;
+      -webkit-text-stroke: 2.5px #000;
+      paint-order: stroke fill;
+      text-shadow: 2px 2px 0 #000, 4px 4px 0 #000;
+    }
+    .masthead .mv {
+      display: block;
+      padding: 4px 12px 3px;
+      font: 400 clamp(16px, 4.2vw, 22px)/1 Bangers, Impact, sans-serif;
+      letter-spacing: 4px;
+      color: #fff;
+      background: #000;
+      -webkit-text-stroke: 0;
+      text-shadow: none;
+    }
+    .masthead .tagrow {
+      align-items: center;
+      margin-top: 8px;
+    }
+    .masthead .tag {
+      margin: 0;
+      font-size: 16px;
+      color: rgba(255, 255, 255, .92);
+      text-shadow: 1px 1px 0 rgba(0, 0, 0, .55);
+    }
+    .masthead .psb {
+      margin-top: 0;
+      color: #fff;
+      background: #000;
+      border-color: #000;
+    }
+    .masthead .psb:hover,
+    .masthead .psb[aria-expanded="true"] {
+      border-color: #fff;
+    }
+    .masthead .psb.need::after {
+      border-color: #000;
+      background: #fff;
+    }
+    @media (max-width: 600px) {
+      .masthead {
+        padding: 10px 12px;
+        margin-bottom: 16px;
+      }
+      .masthead h1 {
+        -webkit-text-stroke: 2px #000;
+        text-shadow: 2px 2px 0 #000, 3px 3px 0 #000;
+      }
+      .masthead .tag {
+        font-size: 14px;
+        line-height: 1.3;
+      }
     }
 
     /* ---- Category chips ---- */
     .chips {
       display: flex;
       flex-wrap: wrap;
-      gap: 10px;
+      gap: 8px;
       margin-bottom: 16px;
     }
     .chip {
-      font: 400 17px Bangers, cursive;
+      font: 400 18px/1.15 Bangers, cursive;
       letter-spacing: 1px;
       color: #fff;
       background: var(--c);
       border: 2px solid #fff;
-      padding: 3px 14px;
+      padding: 6px 14px;
       cursor: pointer;
-      transform: skewX(-8deg);
       box-shadow: 3px 3px 0 rgba(0, 0, 0, .7);
       transition: transform .12s;
     }
     .chip:hover {
-      transform: skewX(-8deg) translateY(-2px);
+      transform: translateY(-2px);
     }
     .chip[aria-pressed="true"] {
       background: #fff;
@@ -402,17 +1049,18 @@
     }
     .chip small {
       margin-left: 6px;
-      font-size: 13px;
-      opacity: .85;
+      font: 700 12.5px Barlow, system-ui, sans-serif;
+      letter-spacing: 0;
+      opacity: .9;
     }
 
     /* ---- Toolbar: filter and poster loader ---- */
     .tools {
       display: flex;
       flex-wrap: wrap;
-      gap: 10px;
+      gap: 8px;
       align-items: center;
-      margin-bottom: 26px;
+      margin-bottom: 24px;
       color: var(--mute);
       font-size: 14px;
     }
@@ -424,26 +1072,25 @@
       padding: 6px 8px;
     }
     .tools label[for=st] {
-      font: 400 18px Bangers, cursive;
-      letter-spacing: 1.5px;
-      color: var(--gold);
+      font: 700 15px Barlow, system-ui, sans-serif;
+      color: var(--ink);
     }
     select {
       appearance: none;
       -webkit-appearance: none;
-      font: 400 17px Bangers, cursive;
+      font: 400 18px/1.15 Bangers, cursive;
       letter-spacing: 1px;
       color: var(--ink);
-      background: #1d2030 url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='14' height='9' viewBox='0 0 14 9'%3E%3Cpath d='M1 1l6 6 6-6' fill='none' stroke='%23f7c600' stroke-width='2.5'/%3E%3C/svg%3E") no-repeat right 10px center;
-      border: 2px solid var(--gold);
-      padding: 4px 34px 4px 12px;
+      background: #1d2030 url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='14' height='9' viewBox='0 0 14 9'%3E%3Cpath d='M1 1l6 6 6-6' fill='none' stroke='%23f4f1e8' stroke-width='2.5'/%3E%3C/svg%3E") no-repeat right 10px center;
+      border: 2px solid #5a5f78;
+      padding: 7px 34px 7px 12px;
       cursor: pointer;
       box-shadow: 3px 3px 0 #000;
-      transform: skewX(-6deg);
       transition: transform .12s, box-shadow .12s;
     }
     select:hover {
-      transform: skewX(-6deg) translate(-1px, -1px);
+      border-color: var(--ink);
+      transform: translate(-1px, -1px);
       box-shadow: 4px 4px 0 #000;
     }
     select option {
@@ -455,43 +1102,42 @@
       width: 190px;
     }
     #tb, #tc {
-      font: 400 16px Bangers, cursive;
-      letter-spacing: 1px;
+      font: 700 14px Barlow, system-ui, sans-serif;
       color: #000;
-      background: var(--gold);
+      background: var(--ink);
       border: 2px solid #000;
-      padding: 5px 12px;
+      padding: 8px 14px;
       cursor: pointer;
       box-shadow: 3px 3px 0 #000;
     }
     :focus-visible {
-      outline: 3px solid var(--gold);
+      outline: 3px solid var(--focus);
       outline-offset: 2px;
     }
 
     /* ---- Category sections ---- */
     section {
-      margin-bottom: 36px;
+      margin-bottom: 32px;
     }
     .sh {
       display: flex;
       justify-content: space-between;
-      align-items: flex-end;
+      align-items: center;
       gap: 10px;
       flex-wrap: wrap;
-      margin-bottom: 14px;
-      border-bottom: 3px solid var(--c);
-      padding-bottom: 6px;
+      margin-bottom: 16px;
+      padding-bottom: 12px;
+      background: linear-gradient(90deg, var(--c) var(--p, 0%), #2b2e3d 0) left bottom / 100% 4px no-repeat;
     }
     .sh h2 {
       display: inline-block;
       margin: 0 12px 0 0;
       background: var(--c);
       color: #fff;
-      font: 400 28px/1 Anton, Impact, sans-serif;
+      font: 400 32px/1 Bangers, cursive;
+      letter-spacing: 1.5px;
       text-transform: uppercase;
-      padding: 4px 22px 4px 12px;
-      clip-path: polygon(0 0, 100% 0, calc(100% - 12px) 100%, 0 100%);
+      padding: 4px 14px 2px;
       text-shadow: 2px 2px 0 rgba(0, 0, 0, .35);
     }
     .meta {
@@ -500,6 +1146,11 @@
     }
     .mshort {
       display: none;
+    }
+    .sh .shl2 {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
     }
     .sh .shl2 .ok {
       margin-right: 10px;
@@ -510,12 +1161,11 @@
       letter-spacing: 1px;
     }
     .sh button {
-      font: 400 14px Bangers, cursive;
-      letter-spacing: 1px;
+      font: 700 13px Barlow, system-ui, sans-serif;
       color: var(--ink);
       background: none;
       border: 2px solid #3a3f55;
-      padding: 2px 10px;
+      padding: 8px 12px;
       cursor: pointer;
       margin-left: 4px;
     }
@@ -537,7 +1187,7 @@
       transition: transform .15s, border-color .15s;
     }
     .c:hover {
-      transform: translateY(-4px) rotate(-.6deg);
+      transform: translateY(-4px);
       border-color: var(--c);
     }
     .c.part {
@@ -545,11 +1195,11 @@
       box-shadow: 0 0 10px -2px var(--c);
     }
     .c.done {
-      border-color: var(--gold);
-      box-shadow: 0 0 0 1px var(--gold), 0 0 18px -2px rgba(255, 200, 40, .55);
+      border-color: var(--c);
+      box-shadow: none;
     }
     .c.done:hover {
-      border-color: var(--gold);
+      border-color: var(--c);
     }
     .c.flash {
       animation: pop .6s cubic-bezier(.2, .9, .3, 1.3);
@@ -572,15 +1222,15 @@
     @keyframes popdone {
       0% {
         transform: scale(1);
-        box-shadow: 0 0 0 0 rgba(255, 200, 40, .9);
+        box-shadow: 0 0 0 0 color-mix(in srgb, var(--c) 80%, transparent);
       }
       35% {
-        transform: scale(1.07) rotate(-1deg);
-        box-shadow: 0 0 0 10px rgba(255, 200, 40, .45), 0 0 36px 6px rgba(255, 200, 40, .8);
+        transform: scale(1.07);
+        box-shadow: 0 0 0 8px color-mix(in srgb, var(--c) 40%, transparent);
       }
       100% {
         transform: scale(1);
-        box-shadow: 0 0 0 1px var(--gold), 0 0 18px -2px rgba(255, 200, 40, .55);
+        box-shadow: none;
       }
     }
     .pz {
@@ -595,7 +1245,7 @@
       padding: 8px;
     }
     .pz .tt {
-      font: 400 20px/1 Anton, Impact, sans-serif;
+      font: 400 20px/1 Bangers, Impact, sans-serif;
       text-transform: uppercase;
       color: #fff;
       text-shadow: 2px 2px 0 rgba(0, 0, 0, .5);
@@ -608,7 +1258,7 @@
       position: absolute;
       left: 50%;
       top: 45%;
-      transform: translate(-50%, -50%) rotate(-14deg) scale(.4);
+      transform: translate(-50%, -50%) scale(.4);
       opacity: 0;
       border: 3px solid var(--gold);
       color: var(--gold);
@@ -621,7 +1271,7 @@
     }
     .done .stamp {
       opacity: 1;
-      transform: translate(-50%, -50%) rotate(-14deg) scale(1);
+      transform: translate(-50%, -50%) scale(1);
     }
     .up {
       position: absolute;
@@ -630,7 +1280,7 @@
       width: 28px;
       height: 28px;
       border: 2px solid #000;
-      background: var(--gold);
+      background: #fff;
       color: #000;
       cursor: pointer;
       opacity: 0;
@@ -668,9 +1318,8 @@
       margin-top: 5px;
     }
     .sn {
-      font: 400 14px Bangers, cursive;
-      letter-spacing: .5px;
-      min-width: 30px;
+      font: 700 13px Barlow, system-ui, sans-serif;
+      min-width: 34px;
       color: var(--ink);
       background: #23263a;
       border: 2px solid #3a3f55;
@@ -704,15 +1353,12 @@
     }
     @keyframes celpop {
       0% {
-        filter: brightness(1);
         transform: scale(1);
       }
       30% {
-        filter: brightness(1.8) drop-shadow(0 0 14px rgba(247, 198, 0, .9));
         transform: scale(1.03);
       }
       100% {
-        filter: brightness(1);
         transform: scale(1);
       }
     }
@@ -746,7 +1392,7 @@
       text-align: left;
     }
     .ph .cl:hover {
-      color: var(--gold);
+      opacity: .8;
     }
     .sh .cl {
       font: inherit;
@@ -764,7 +1410,7 @@
       text-align: left;
     }
     .sh .cl:hover {
-      color: var(--gold);
+      opacity: .85;
     }
     .sh .chev {
       display: inline-block;
@@ -779,23 +1425,20 @@
       transition: transform .15s;
     }
     .ph.done {
-      background: linear-gradient(90deg, rgba(247, 198, 0, .2), transparent 75%);
+      background: linear-gradient(90deg, color-mix(in srgb, var(--c) 24%, transparent), transparent 75%);
       padding: 6px 10px;
       border-bottom: 2px solid transparent;
-      border-image: linear-gradient(90deg, var(--gold), #fff6c2, var(--gold), transparent) 1;
+      border-image: linear-gradient(90deg, var(--c), transparent) 1;
     }
     .ph.done h3 {
-      border-left-color: var(--gold);
-      text-shadow: 0 0 14px rgba(247, 198, 0, .6);
+      border-left-color: var(--c);
     }
     .badge {
-      font: 400 15px Bangers, cursive;
-      letter-spacing: 1.5px;
+      font: 700 13px/1.5 Barlow, system-ui, sans-serif;
+      letter-spacing: 1px;
       color: #000;
       padding: 1px 12px;
-      transform: skewX(-8deg);
-      background: linear-gradient(100deg, #f7c600 35%, #fff7c9 50%, #f7c600 65%) 0 0/250% 100%;
-      animation: shine 2.4s linear infinite;
+      background: var(--c);
       box-shadow: 2px 2px 0 #000;
     }
     section.complete {
@@ -804,25 +1447,60 @@
       border: 3px solid transparent;
       background: linear-gradient(var(--bg), var(--bg)) padding-box, conic-gradient(from var(--ang), var(--c), #f7c600, #fff, #e62429, #8b5cf6, var(--c)) border-box;
       animation: spin 5s linear infinite;
-      box-shadow: 0 0 34px -8px var(--c);
+      box-shadow: 0 0 26px -8px var(--c);
     }
     section.complete .sh {
       border-image: linear-gradient(90deg, var(--c), var(--gold), #fff, var(--gold), var(--c)) 1;
     }
     section.complete .sh h2 {
-      background: linear-gradient(110deg, var(--c) 30%, #fff 50%, var(--c) 70%) 0 0/250% 100%;
-      animation: shine 2.4s linear infinite;
       text-shadow: 2px 2px 0 rgba(0, 0, 0, .6);
     }
+    section.complete.open {
+      padding-bottom: 14px;
+    }
+    /* ribbon: notched ends, black outline, gold halftone fill with stitched edges */
     section.complete .ok {
-      display: inline-block;
-      font-size: 22px;
+      position: relative;
+      display: inline-flex;
+      align-items: center;
+      gap: 10px;
+      padding: 8px 30px 6px;
+      font-size: 21px;
+      letter-spacing: 2px;
+      line-height: 1;
       color: #000;
-      padding: 0 12px;
-      transform: skewX(-8deg);
-      background: linear-gradient(100deg, #f7c600, #fff, #ff7a7a, #f7c600) 0 0/300% 100%;
-      animation: shine 2s linear infinite;
-      box-shadow: 2px 2px 0 #000;
+      background: #000;
+      clip-path: polygon(0 0, 100% 0, calc(100% - 13px) 50%, 100% 100%, 0 100%, 13px 50%);
+    }
+    section.complete .ok::before {
+      content: "";
+      position: absolute;
+      inset: 3px;
+      clip-path: polygon(0 0, 100% 0, calc(100% - 11px) 50%, 100% 100%, 0 100%, 11px 50%);
+      background:
+        repeating-linear-gradient(90deg, rgba(0, 0, 0, .5) 0 4px, transparent 4px 8px) 14px 3px / calc(100% - 28px) 1.5px no-repeat,
+        repeating-linear-gradient(90deg, rgba(0, 0, 0, .5) 0 4px, transparent 4px 8px) 14px calc(100% - 3px) / calc(100% - 28px) 1.5px no-repeat,
+        radial-gradient(circle, rgba(0, 0, 0, .16) 1px, transparent 1.6px) 0 0 / 5px 5px,
+        linear-gradient(180deg, #ffe680, var(--gold) 50%, #d9a800);
+    }
+    section.complete .ok > span {
+      position: relative;
+    }
+    section.complete .ok .rs {
+      font-size: .7em;
+    }
+    /* one light sweep across the ribbon at the moment the category is finished */
+    .sh.cel .ok::after {
+      content: "";
+      position: absolute;
+      inset: 3px;
+      clip-path: polygon(0 0, 100% 0, calc(100% - 11px) 50%, 100% 100%, 0 100%, 11px 50%);
+      background: linear-gradient(100deg, transparent 38%, rgba(255, 255, 255, .85) 50%, transparent 62%) 0 0 / 250% 100%;
+      animation: ribshine 1s ease-out 1;
+    }
+    @keyframes ribshine {
+      from { background-position: 150% 0; }
+      to { background-position: -100% 0; }
     }
     .sh.cel, .ph.cel {
       animation: celpop .9s ease-out;
@@ -843,22 +1521,22 @@
       flex-wrap: wrap;
       align-items: baseline;
       gap: 4px 12px;
-      margin: 22px 0 12px;
+      margin: 24px 0 16px;
     }
     .ph h3 {
       margin: 0;
-      font: 400 22px Anton, Impact, sans-serif;
+      font: 400 23px/1.1 Bangers, cursive;
+      letter-spacing: 1px;
       text-transform: uppercase;
       border-left: 6px solid var(--c);
       padding-left: 10px;
     }
     .phb button {
-      font: 400 13px Bangers, cursive;
-      letter-spacing: 1px;
+      font: 700 12.5px Barlow, system-ui, sans-serif;
       color: var(--ink);
       background: none;
       border: 2px solid #3a3f55;
-      padding: 0 8px;
+      padding: 7px 10px;
       cursor: pointer;
       margin-right: 4px;
     }
@@ -890,9 +1568,10 @@
         padding: 12px 12px;
       }
       .hero .row {
-        flex-wrap: wrap;
-        gap: 6px 14px;
-        align-items: center;
+        flex-direction: column;
+        align-items: stretch;
+        gap: 16px;
+        margin-bottom: 16px;
       }
       .hero .big {
         font-size: 44px;
@@ -901,14 +1580,27 @@
       .rk {
         gap: 8px;
         min-width: 0;
-        flex: 1 1 150px;
+        flex: none;
+        justify-content: flex-start;
+      }
+      .rk .tx {
+        align-items: flex-start;
+        text-align: left;
       }
       .rk .emb {
-        width: 38px;
-        height: 44px;
+        width: 40px;
+        height: 46px;
       }
-      .rk .emb::before {
+      .rk .emb::before, .rk .emb::after {
         inset: 3px;
+      }
+      .rk .lv {
+        font-size: 10px;
+        bottom: -8px;
+        padding: 2px 5px 1px;
+      }
+      .rk .eg {
+        margin: 0 3px;
       }
       .rk .ic {
         font-size: 19px;
@@ -918,7 +1610,7 @@
         min-width: 0;
       }
       .rk .nm {
-        font-size: 16px;
+        font-size: 14px;
         padding: 2px 8px;
         letter-spacing: .8px;
         white-space: nowrap;
@@ -927,33 +1619,30 @@
         gap: 3px;
       }
       .rk .pips i {
-        width: 12px;
-        height: 5px;
+        width: 10px;
+        height: 6px;
         border-width: 1.5px;
       }
       .rk .nx {
-        font-size: 10.5px;
+        font-size: 11.5px;
         line-height: 1.15;
+        color: #4a4c5a;
       }
 
       .shelf {
-        display: grid;
-        grid-template-columns: repeat(auto-fit, minmax(72px, 1fr));
-        gap: 6px 4px;
-        padding: 12px 10px 14px;
-        margin-bottom: 20px;
+        padding: 12px 10px 6px;
+        margin-bottom: 16px;
       }
-      .shelf .shl {
-        grid-column: 1 / -1;
+      .shelf .mrow {
+        gap: 6px;
       }
       .medal {
-        width: 100%;
-        min-width: 0;
+        width: 84px;
       }
 
       /* Section header: smaller name, and "Assemble!" instead of the long medal name, so it stays on one line */
       .sh h2 {
-        font-size: 18px;
+        font-size: 25px;
         padding: 4px 16px 4px 8px;
         margin-right: 8px;
         white-space: nowrap;
@@ -997,23 +1686,27 @@
       .mstar {
         display: none;
       }
+      section.complete .ok .rs {
+        display: none;
+      }
       section.complete .ok {
-        font-size: 19px;
-        padding: 6px 18px 4px 18px;
+        font-size: 17px;
+        letter-spacing: 1px;
+        height: 32px;
+        padding: 0 20px;
+        gap: 0;
         margin-right: 0;
-        color: #fff;
-        background: linear-gradient(100deg, #f7c600, #fff, #ff7a7a, #f7c600) 0 0/300% 100%;
-        animation: shine 2s linear infinite;
+        color: #000;
+        background: #000;
         border: 0;
         transform: none;
         box-shadow: none;
-        clip-path: polygon(12px 0, 100% 0, 100% 100%, 0 100%);
         display: inline-flex;
         align-items: center;
         justify-content: center;
         text-align: center;
         line-height: 1;
-        text-shadow: 1px 1px 0 #000, -1px 1px 0 #000, 1px -1px 0 #000, -1px -1px 0 #000, 2px 2px 0 #000;
+        text-shadow: none;
       }
       section.complete {
         padding: 12px 10px 4px;
@@ -1075,13 +1768,12 @@
       top: 0;
       left: 0;
       z-index: 2;
-      font: 400 13px Bangers, cursive;
+      font: 700 11.5px Barlow, system-ui, sans-serif;
       font-style: normal;
-      letter-spacing: 1.5px;
+      letter-spacing: .8px;
       color: #03140a;
       background: #35d07f;
       padding: 1px 12px 1px 7px;
-      clip-path: polygon(0 0, 100% 0, calc(100% - 7px) 100%, 0 100%);
       pointer-events: none;
     }
     .c.doom .stamp {
@@ -1096,31 +1788,143 @@
         animation: doomglow 3.2s ease-in-out infinite;
       }
     }
+
+  
+    /* DOOM ribbon: skull + word share one centre line */
+    .doom-tag {
+      display: flex;
+      align-items: center;
+      gap: 4px;
+      line-height: 1;
+      padding: 3px 13px 3px 7px;
+    }
+    .doom-tag svg {
+      display: block;
+      flex: none;
+      width: 11px;
+      height: 11px;
+    }
+    .doom-tag span {
+      display: block;
+    }
+    @supports (text-box: trim-both cap alphabetic) {
+      .doom-tag span {
+        text-box: trim-both cap alphabetic;
+      }
+    }
+  
+    /* 10 rank levels: slimmer progress pips so they all fit */
+    .rk .pips {
+      gap: 3px;
+    }
+    .rk .pips i {
+      width: 13px;
+    }
+
+    /* ---- Phones: keep the glows tight so they don't wash over the page ---- */
+    @media (max-width: 600px) {
+      .c.done,
+      .c.done:hover {
+        box-shadow: none;
+      }
+      .c.doom:not(.done),
+      .c.doom:not(.done):not(.flash) {
+        box-shadow: 0 0 0 1px #35d07f;
+        animation: none;
+      }
+      .sh {
+        flex-wrap: nowrap;
+        align-items: flex-start;
+      }
+      .sh .shl2 {
+        flex: 1;
+        min-width: 0;
+      }
+      .sh h2 {
+        display: flex;
+        align-items: center;
+        height: 32px;
+        padding: 0 12px;
+      }
+      .sh .kb {
+        flex: none;
+        width: 32px;
+        height: 32px;
+        font-size: 17px;
+        letter-spacing: 0;
+      }
+      .ph {
+        display: grid;
+        grid-template-columns: 1fr auto;
+        align-items: center;
+        gap: 6px 10px;
+      }
+      .ph .phb {
+        grid-column: 2;
+        grid-row: 1;
+        margin-left: 0;
+      }
+      .ph .badge,
+      .ph .meta {
+        grid-column: 1 / -1;
+        justify-self: start;
+      }
+      .ph .kb {
+        width: 32px;
+        height: 32px;
+        font-size: 17px;
+        letter-spacing: 0;
+      }
+      section {
+        margin-bottom: 24px;
+      }
+    }
+
+    /* very narrow phones: keep the ribbon on the title line */
+    @media (max-width: 380px) {
+      section.complete .ok {
+        font-size: 15px;
+        padding: 0 16px;
+      }
+      .sh h2 {
+        font-size: 22px;
+      }
+    }
   </style>
 </head>
 <body>
+  <button type="button" class="stk" id="stk" tabindex="-1" aria-hidden="true" aria-label="Back to top"></button>
+  <div class="toast" id="toast" role="status" aria-live="polite"><span id="toastMsg"></span><button type="button" id="toastUndo">UNDO</button></div>
+  <div class="menu" id="menu" role="menu" hidden></div>
   <div class="wrap">
-    <h1>Marvel Watch Tracker</h1>
-    <p class="tag">Earth’s mightiest watchlist. Assemble every movie and show.</p>
+    <header class="masthead">
+      <h1><span class="mv">Marvel</span>Watch Tracker</h1>
+      <div class="tagrow">
+        <p class="tag">Earth’s mightiest watchlist. Assemble every movie and show.</p>
+        <button type="button" class="psb" id="psb" aria-label="Poster settings" aria-expanded="false" aria-controls="pset" title="Poster settings">⚙</button>
+      </div>
+    </header>
 
-    <!-- Filled in by render() in the script below -->
-    <div class="hero" id="hero"></div>
-    <div class="chips" id="chips"></div>
-    <div class="shelf" id="shelf"></div>
-
-    <div class="tools">
-      <label for="st">Show</label>
-      <select id="st">
-        <option value="all">Everything</option>
-        <option value="todo">Not finished</option>
-        <option value="part">In progress</option>
-        <option value="done">Finished</option>
-      </select>
+    <!-- Poster settings stay tucked away until the gear is tapped -->
+    <div class="tools" id="pset" hidden>
       <input id="tk" type="password" placeholder="TMDB API key (v3)" aria-label="TMDB API key">
       <button id="tb">Load posters</button>
       <button id="tc" type="button">Copy poster data</button>
       <span id="ts"></span>
     </div>
+
+    <!-- Filled in by render() in the script below -->
+    <div class="hero" id="hero"></div>
+    <div class="nav">
+      <select id="st" aria-label="Filter titles">
+        <option value="all">Everything</option>
+        <option value="todo">Not finished</option>
+        <option value="part">In progress</option>
+        <option value="done">Finished</option>
+      </select>
+      <div class="chips" id="chips"></div>
+    </div>
+    <div class="shelf" id="shelf"></div>
 
     <input type="file" id="pf" accept="image/*" hidden>
     <main id="list"></main>
@@ -1145,7 +1949,7 @@
       mcu:   ['MCU', '#e62429'],
       net:   ['Netflix', '#3b6fd8'],
       abc:   ['ABC', '#8b5cf6'],
-      fox:   ['Fox', '#e0a100'],
+      fox:   ['Fox', '#f2711c'],
       anim:  ['Animation', '#00a8e8'],
       sony:  ['Sony', '#0e9f9d'],
       blade: ['Blade Trilogy', '#9b1d4a'],
@@ -1157,28 +1961,41 @@
       mcu:   ['Master of the MCU', '🛡️'],
       net:   ['Street-Level Hero', '🥊'],
       abc:   ['Agent of S.H.I.E.L.D.', '🦅'],
-      fox:   ['Fox Marvel Veteran', '🦊'],
+      fox:   ['20th Century Hero', '🦊'],
       anim:  ['Saturday Morning Hero', '📺'],
       sony:  ['Sony Marvel Collector', '🕸️'],
       blade: ['Daywalker', '🗡️'],
       run:   ['Completionist', '🦆'],
     };
 
+    // Fox also gets one medal per sub-section (on top of the whole-category medal in MEDALS): key -> [name, icon, colour]
+    const SUB_MEDALS = {
+      'fox:xmen': ['Mutant & Proud', '🧬', '#e0a100'],
+      'fox:f4':   ['Flame On!', '🔥', '#1e88e5'],
+      'fox:dd':   ['Man Without Fear', '😈', '#d9480f'],
+    };
+
     // Extra medal: earned once every Doomsday essential (DOOM_TITLES) is watched
     const DOOM_MEDAL = ['Doomsday Ready', '☠️', '#35d07f'];
 
-    // Overall rank tiers: [minimum percent, name, symbol]
+    // Overall rank tiers: [minimum percent, name, symbol, badge look 0-5]
+    // (the badge has 6 looks: grey, bronze, silver, gold, cosmic purple, rainbow)
     const RANK_TIERS = [
-      [0,   'Civilian',            '?'],
-      [1,   'Rookie Recruit',      '✦'],
-      [25,  'Avenger in Training', '★'],
-      [50,  'Earth’s Mightiest',   '↯'],
-      [75,  'Cosmic-level Hero',   '✺'],
-      [100, 'Omniscient Watcher',  '∞'],
+      [0,   'Civilian',              '?', 0],
+      [1,   'Rookie Recruit',        '✦', 1],
+      [10,  'S.H.I.E.L.D. Agent',    '◆', 2],
+      [20,  'Avenger in Training',   '★', 3],
+      [35,  'Multiverse Traveler',   '✧', 4],
+      [50,  'Earth’s Mightiest',     '↯', 5],
+      [65,  'Cosmic-level Hero',     '✺', 6],
+      [80,  'Infinity Stone Bearer', '⬡', 7],
+      [90,  'Sorcerer Supreme',      '✹', 8],
+      [100, 'Omniscient Watcher',    '∞', 9],
     ];
 
     const PHASE_NAMES = ['', 'Phase One', 'Phase Two', 'Phase Three', 'Phase Four', 'Phase Five', 'Phase Six'];
     const LAST_PHASE = 6;
+    const PHASE_COLORS = ['', '#e62429', '#3b6fd8', '#8b5cf6', '#14b8a6', '#ff7a1a', '#ec4899'];
 
     // The Sony category is one section split into sub-sections: [id, name]
     const SONY_SUBS = [
@@ -1198,6 +2015,18 @@
 
     // category id -> its sub-sections
     const SUBS = { sony: SONY_SUBS, fox: FOX_SUBS };
+
+    // each sub-section gets its own colour and its own "done" title: key -> [colour, title]
+    const SUB_STYLE = {
+      'sony:raimi': ['#e0342f', 'FRIENDLY NEIGHBOR'],
+      'sony:asm':   ['#2f6fdc', 'AMAZING!'],
+      'sony:verse': ['#c026d3', 'ACROSS THE VERSE'],
+      'sony:villn': ['#16a34a', 'SINISTER SIX'],
+      'sony:ghost': ['#f97316', 'HELLFIRE'],
+      'fox:xmen':   ['#6366f1', 'MUTANT & PROUD'],
+      'fox:f4':     ['#1e88e5', 'FLAME ON!'],
+      'fox:dd':     ['#d9480f', 'MAN WITHOUT FEAR'],
+    };
 
 
     // ---------------------------------------------------------------------
@@ -1595,7 +2424,8 @@
     } catch (e) {}
 
     let customPosters = readJSON('mvposter', {});       // title -> uploaded image (data URL)
-    let collapsed = readJSON('mvcol', {});              // "cat:<id>", "<cat>:<phase>" or "shelf" -> true
+    let collapsed = readJSON('mvcol', {});
+    if (!('shelf' in collapsed) && matchMedia('(max-width: 600px)').matches) collapsed.shelf = true;   // medals start folded on phones              // "cat:<id>", "<cat>:<phase>" or "shelf" -> true
 
     const saveWatched = () => writeJSON('mvtrack2', watched);
     const saveCollapsed = () => writeJSON('mvcol', collapsed);
@@ -2051,15 +2881,24 @@
     // HTML builders
     // ---------------------------------------------------------------------
 
-    function rankBadgeHTML(percent) {
+    function rankBadgeHTML(percent, stats) {
       const tier = tierOf(percent);
-      const [, name, symbol] = RANK_TIERS[tier];
+      const [, name, symbol, look] = RANK_TIERS[tier];
       const next = RANK_TIERS[tier + 1];
-      const pips = RANK_TIERS.map((_, i) => `<i class="${i <= tier ? 'on' : ''}"></i>`).join('');
-      const nextText = next ? 'Next: ' + next[1] + ' at ' + next[0] + '%' : 'MAX RANK ACHIEVED';
+      const pips = RANK_TIERS.map((_, i) => `<i class="${i < tier ? 'on' : i === tier ? 'cur' : ''}"></i>`).join('');
+      let nextText = 'MAX RANK ACHIEVED';
+      if (next) {
+        if (stats && stats.total) {
+          // percent is based on minutes watched, so show the watch time still needed
+          const needed = Math.max(1, Math.ceil((next[0] - 0.5) / 100 * stats.total) - stats.done);
+          nextText = formatTime(needed) + ' more to ' + next[1];
+        } else {
+          nextText = 'Next: ' + next[1] + ' at ' + next[0] + '%';
+        }
+      }
 
-      return `<span class="rk" data-t="${tier}" title="Rank ${tier + 1} of ${RANK_TIERS.length}">`
-        + `<span class="eg"><span class="emb"><span class="ic">${symbol}</span></span></span>`
+      return `<span class="rk" data-t="${look}" title="Level ${tier + 1} of ${RANK_TIERS.length}">`
+        + `<span class="eg"><span class="emb"><span class="ic">${symbol}</span></span><b class="lv">LV ${tier + 1}</b></span>`
         + `<span class="tx"><span class="nm">${name}</span><span class="pips">${pips}</span><span class="nx">${nextText}</span></span>`
         + `</span>`;
     }
@@ -2095,7 +2934,7 @@
 
       return `<article class="c ${cardClass} ${flashClass} ${isDoom ? 'doom' : ''}"${isDoom ? ' title="Avengers: Doomsday essential"' : ''}>`
         + `<div class="pz" role="button" tabindex="0" data-tg="${itemIndex}" data-js="${indexes.join(',')}" aria-pressed="${isDone}" aria-label="Toggle watched: ${item.title}" style="${background}">`
-        + (isDoom ? '<i class="doom-tag">☠ DOOM</i>' : '')
+        + (isDoom ? '<i class="doom-tag"><svg viewBox="0 0 16 16" aria-hidden="true"><path fill="currentColor" fill-rule="evenodd" d="M8 1C4.4 1 2 3.3 2 6.4c0 1.8.8 3.1 2 3.9V13c0 .6.4 1 1 1h1v-1.5h1V14h2v-1.5h1V14h1c.6 0 1-.4 1-1v-2.7c1.2-.8 2-2.1 2-3.9C14 3.3 11.6 1 8 1zM5.6 8.6a1.4 1.4 0 100-2.8 1.4 1.4 0 000 2.8zm4.8 0a1.4 1.4 0 100-2.8 1.4 1.4 0 000 2.8zM8 9l.9 1.5H7.1z"/></svg><span>DOOM</span></i>' : '')
         + (poster ? '' : `<span class="tt">${item.title}</span>`)
         + `<b class="stamp">${item.isShow ? 'DONE!' : 'WATCHED'}</b>`
         + `<button class="up" data-p="${itemIndex}" aria-label="Change poster for ${item.title}">✎</button>`
@@ -2107,68 +2946,85 @@
     function phaseHeaderHTML(key, phase, entries, isComplete, isCollapsed) {
       const stats = statsForEntries(entries);
       const name = PHASE_NAMES[phase] || ((SUBS[key.split(':')[0]] || []).find(([id]) => id === phase) || [])[1];
-      const doneText = PHASE_NAMES[phase] ? '★ PHASE COMPLETE ★' : '★ COMPLETE ★';
-      return `<div class="ph ${isComplete ? 'done' : ''}" data-key="${key}">`
+      const sub = SUB_STYLE[key];
+      const doneText = PHASE_NAMES[phase] ? `★ PHASE CLEAR · ${phase <= 3 ? 'INFINITY' : 'MULTIVERSE'} SAGA ★` : sub ? `★ ${sub[1]} ★` : '★ COMPLETE ★';
+      const accent = PHASE_NAMES[phase] ? `style="--c:${PHASE_COLORS[phase]}"` : sub ? `style="--c:${sub[0]}"` : '';
+      // the saga name rides in the badge once the phase is done; until then it sits in the info line
+      const saga = PHASE_NAMES[phase] && !isComplete ? (phase <= 3 ? 'Infinity Saga' : 'Multiverse Saga') + ' · ' : '';
+      return `<div class="ph ${isComplete ? 'done' : ''}" data-key="${key}" ${accent}>`
         + `<h3><button type="button" class="cl" data-col="${key}" aria-expanded="${!isCollapsed}"><span class="chev">${isCollapsed ? '▸' : '▾'}</span>${name}</button></h3>`
         + (isComplete ? `<span class="badge">${doneText}</span>` : '')
-        + `<span class="meta">${stats.percent}% · ${stats.finished}/${stats.count} finished · ${formatTime(stats.left)} left</span>`
-        + `<span class="phb"><button data-bp="${phase}:1">Mark phase</button><button data-bp="${phase}:0">Clear</button></span>`
+        + `<span class="meta">${saga}${stats.finished}/${stats.count} · ${formatTime(stats.left)} left</span>`
+        + `<span class="phb"><button type="button" class="kb" data-menu="bp:${phase}" aria-haspopup="menu" aria-expanded="false" aria-label="Actions for ${name}">⋯</button></span>`
         + `</div>`;
     }
 
     function sectionHTML(cat, body, stats, isComplete, isCollapsed) {
       const [label, color] = CATEGORIES[cat];
       const [medalName, medalIcon] = MEDALS[cat];
-      const medalText = isComplete ? `<b class="ok"><span class="micon">${medalIcon} </span><span class="mfull">${medalName}</span><span class="mshort">Assemble!</span><span class="mstar"> ★</span></b> ` : '';
+      const medalText = isComplete ? `<b class="ok"><span class="rs">★</span><span class="rw">COMPLETE</span><span class="rs">★</span></b> ` : '';
       const content = isCollapsed
         ? ''
         : body || '<div class="grid"><div class="empty">Nothing matches this filter.</div></div>';
 
-      return `<section class="${isComplete ? 'complete' : ''}" style="--c:${color}">`
-        + `<div class="sh" data-key="${cat}"><div class="shl2">`
+      return `<section class="${isComplete ? 'complete' + (isCollapsed ? '' : ' open') : ''}" style="--c:${color}">`
+        + `<div class="sh" data-key="${cat}" style="--p:${stats.percent}%"><div class="shl2">`
         + `<h2><button type="button" class="cl" data-col="cat:${cat}" aria-expanded="${!isCollapsed}"><span class="chev">${isCollapsed ? '▸' : '▾'}</span>${label}</button></h2>`
         + medalText
-        + `<span class="meta">${stats.percent}% · ${stats.finished}/${stats.count} finished · ${formatTime(stats.left)} left</span>`
-        + `</div><div><button data-bulk="${cat}:1">Mark all watched</button><button data-bulk="${cat}:0">Clear</button></div></div>`
+        + `<span class="meta">${stats.finished}/${stats.count} · ${formatTime(stats.left)} left</span>`
+        + `</div><button type="button" class="kb" data-menu="bulk:${cat}" aria-haspopup="menu" aria-expanded="false" aria-label="Actions for ${label}">⋯</button></div>`
         + content
         + `</section>`;
     }
 
     function medalShelfHTML(completed, allIndexes) {
-      const cats = Object.keys(CATEGORIES);
-      const earned = cats.filter(cat => completed.has(cat)).length + (completed.has('doom') ? 1 : 0);
+      // One medal per category (Fox has one per sub-section instead); Doomsday Ready goes last
+      const list = [];
+      Object.keys(CATEGORIES).forEach(cat => {
+        if (cat === 'fox') {
+          FOX_SUBS.forEach(([id, subName]) => {
+            const [name, icon, color] = SUB_MEDALS['fox:' + id];
+            list.push({ key: 'fox:' + id, cat, name, icon, color, label: subName,
+              percent: statsForEntries(subEntries('fox', id)).percent });
+          });
+          // ...plus one for finishing all of Fox
+          const [foxName, foxIcon] = MEDALS.fox;
+          list.push({ key: 'fox', cat, name: foxName, icon: foxIcon, color: CATEGORIES.fox[1], label: CATEGORIES.fox[0],
+            percent: statsForItems(allIndexes.filter(i => items[i].cat === 'fox')).percent });
+        } else {
+          const [name, icon] = MEDALS[cat];
+          list.push({ key: cat, cat, name, icon, color: CATEGORIES[cat][1], label: CATEGORIES[cat][0],
+            percent: statsForItems(allIndexes.filter(i => items[i].cat === cat)).percent });
+        }
+      });
+      const [doomName, doomIcon, doomColor] = DOOM_MEDAL;
+      list.push({ key: 'doom', name: doomName, icon: doomIcon, color: doomColor, label: 'the Doomsday essentials',
+        percent: statsForItems(allIndexes.filter(i => DOOM_TITLES.includes(items[i].title))).percent });
+
+      const earned = list.filter(m => completed.has(m.key)).length;
       const isShut = !!collapsed.shelf;
 
       const header = '<div class="shl">'
         + `<button type="button" class="cl" data-col="shelf" aria-expanded="${!isShut}"><span class="chev">${isShut ? '▸' : '▾'}</span>Medals</button>`
-        + `<small>${earned}/${cats.length + 1} earned</small></div>`;
+        + `<small>${earned}/${list.length} earned</small>`
+        + `<span class="swipe" aria-hidden="true">Swipe ›</span>`
+        + `</div>`;
       if (isShut) return header;
 
-      const medals = cats.map(cat => {
-        const [label, color] = CATEGORIES[cat];
-        const [name, icon] = MEDALS[cat];
-        const on = completed.has(cat);
-        const percent = statsForItems(allIndexes.filter(i => items[i].cat === cat)).percent;
-        return `<button type="button" class="medal ${on ? 'on' : ''}" data-cat="${cat}" data-medal="${cat}" style="--c:${color}"`
-          + ` title="${label}: ${on ? 'earned' : percent + '% done'}"`
-          + ` aria-label="${name} medal, ${on ? 'earned' : percent + '% of ' + label}">`
-          + `<span class="md"><span class="mi">${on ? icon : '🔒'}</span></span>`
-          + `<span class="mn">${name}</span>`
-          + (on ? '' : `<span class="mp">${percent}%</span>`)
+      // earned medals first, then the ones closest to unlocking
+      const shown = [...list.filter(m => completed.has(m.key)), ...list.filter(m => !completed.has(m.key)).sort((a, b) => b.percent - a.percent)];
+
+      const medals = shown.map(m => {
+        const on = completed.has(m.key);
+        return `<button type="button" class="medal ${on ? 'on' : ''}"${m.cat ? ` data-cat="${m.cat}"` : ''} data-medal="${m.key}" style="--c:${m.color};--p:${m.percent}"`
+          + ` title="${m.label}: ${on ? 'earned' : m.percent + '% done'}"`
+          + ` aria-label="${m.name} medal, ${on ? 'earned' : m.percent + '% of ' + m.label}">`
+          + `<span class="md"><span class="mi">${on ? m.icon : '🔒'}</span></span>`
+          + `<span class="mn">${m.name}</span>`
+          + (on ? '' : `<span class="mp">${m.percent}%</span>`)
           + `</button>`;
       });
-      // Doomsday Ready medal goes last
-      const [doomName, doomIcon, doomColor] = DOOM_MEDAL;
-      const doomOn = completed.has('doom');
-      const doomPercent = statsForItems(allIndexes.filter(i => DOOM_TITLES.includes(items[i].title))).percent;
-      medals.push(`<button type="button" class="medal ${doomOn ? 'on' : ''}" data-medal="doom" style="--c:${doomColor}"`
-        + ` title="Avengers: Doomsday essentials: ${doomOn ? 'earned' : doomPercent + '% done'}"`
-        + ` aria-label="${doomName} medal, ${doomOn ? 'earned' : doomPercent + '% of the Doomsday essentials'}">`
-        + `<span class="md"><span class="mi">${doomOn ? doomIcon : '🔒'}</span></span>`
-        + `<span class="mn">${doomName}</span>`
-        + (doomOn ? '' : `<span class="mp">${doomPercent}%</span>`)
-        + `</button>`);
-      return header + medals.join('');
+      return header + `<div class="mrow">${medals.join('')}</div>`;
     }
 
 
@@ -2176,9 +3032,156 @@
     // Rendering
     // ---------------------------------------------------------------------
 
+
+    // ---------------------------------------------------------------------
+    // Sticky mini bar, undo toast and comic burst panel
+    // ---------------------------------------------------------------------
+
+    const stkEl = document.getElementById('stk');
+    const toastEl = document.getElementById('toast');
+    const toastMsgEl = document.getElementById('toastMsg');
+    let toastTimer = null;
+    let undoSnapshot = null;
+
+    new IntersectionObserver(([entry]) => {
+      const show = !entry.isIntersecting && entry.boundingClientRect.top < 0;
+      stkEl.classList.toggle('on', show);
+      stkEl.setAttribute('aria-hidden', String(!show));
+      stkEl.tabIndex = show ? 0 : -1;
+    }).observe(heroEl);
+
+    stkEl.addEventListener('click', () => window.scrollTo({ top: 0, behavior: 'smooth' }));
+
+    // one thin marker per rank threshold (skips the 0% start and the 100% end)
+    function barHTML(percent) {
+      return `<div class="pbar${percent >= 100 ? ' full' : percent <= 0 ? ' zero' : ''}"><i style="width:${percent}%"></i></div>`;
+    }
+
+    function updateSticky(stats, tier, label) {
+      stkEl.style.setProperty('--ac', heroEl.style.getPropertyValue('--ac'));
+      const [, name, symbol, look] = RANK_TIERS[tier];
+      stkEl.innerHTML = `<div class="si">`
+        + `<span class="rk" data-t="${look}"><span class="eg"><span class="emb"><span class="ic">${symbol}</span></span></span></span>`
+        + `<span class="who"><b>${name}</b><small>LV ${tier + 1} · ${label}</small></span>`
+        + `<span class="tr">${barHTML(stats.percent)}</span>`
+        + `<span class="pc">${stats.percent}%</span>`
+        + `<span class="gt" aria-hidden="true">▲</span></div>`;
+    }
+
+    // Edge fades + "Swipe" hint on the medal row, only while more medals are out of view
+    function updateMedalCues() {
+      const row = shelfEl.querySelector('.mrow');
+      if (!row) {
+        shelfEl.classList.remove('scrolls');
+        return;
+      }
+      const max = row.scrollWidth - row.clientWidth;
+      const moreRight = max > 4 && row.scrollLeft < max - 4;
+      row.classList.toggle('fade-r', moreRight);
+      row.classList.toggle('fade-l', row.scrollLeft > 4);
+      shelfEl.classList.toggle('scrolls', moreRight);
+    }
+    shelfEl.addEventListener('scroll', updateMedalCues, true);
+    window.addEventListener('resize', updateMedalCues);
+
+    // Take a copy of the watch list before a bulk action so it can be undone
+    function snapshotWatched() {
+      return JSON.stringify(watched);
+    }
+
+    function offerUndo(message, snapshot) {
+      if (snapshot === JSON.stringify(watched)) return;   // nothing actually changed
+      undoSnapshot = snapshot;
+      toastMsgEl.textContent = message;
+      toastEl.classList.add('on');
+      clearTimeout(toastTimer);
+      toastTimer = setTimeout(hideToast, 7000);
+    }
+
+    function hideToast() {
+      toastEl.classList.remove('on');
+      undoSnapshot = null;
+    }
+
+    document.getElementById('toastUndo').addEventListener('click', () => {
+      if (undoSnapshot === null) return;
+      watched = JSON.parse(undoSnapshot);
+      saveWatched();
+      hideToast();
+      render();
+    });
+
+    // Big "POW!" style panel for finishing a section or ranking up
+    let powTimer = null;
+    function comicPanel(title, sub, color) {
+      document.querySelectorAll('.pow').forEach(el => el.remove());
+      clearTimeout(powTimer);
+      const el = document.createElement('div');
+      el.className = 'pow';
+      el.setAttribute('role', 'status');
+      el.style.setProperty('--pc', color || '#f7c600');
+      el.innerHTML = `<div class="bst"><div class="tx"><b>${title}</b>${sub ? `<small>${sub}</small>` : ''}</div></div>`;
+      document.body.appendChild(el);
+      powTimer = setTimeout(() => el.remove(), 2200);
+    }
+
+
+    // ---------------------------------------------------------------------
+    // Settings gear and the "..." action menu on category / phase headers
+    // ---------------------------------------------------------------------
+
+    const menuEl = document.getElementById('menu');
+    let menuTrigger = null;
+    let menuOpenedAt = 0;
+
+    function closeMenu(returnFocus) {
+      if (menuEl.hidden) return;
+      menuEl.hidden = true;
+      if (menuTrigger) {
+        menuTrigger.setAttribute('aria-expanded', 'false');
+        if (returnFocus && document.contains(menuTrigger)) menuTrigger.focus();
+      }
+      menuTrigger = null;
+    }
+
+    function openMenu(trigger) {
+      closeMenu();
+      const [kind, id] = trigger.dataset.menu.split(':');
+      const attr = kind === 'bulk' ? 'data-bulk' : 'data-bp';
+      menuEl.innerHTML = `<button type="button" role="menuitem" ${attr}="${id}:1">Mark all watched</button>`
+        + `<button type="button" role="menuitem" class="danger" ${attr}="${id}:0">Clear progress</button>`;
+      menuEl.hidden = false;
+      const box = trigger.getBoundingClientRect();
+      const width = menuEl.offsetWidth;
+      const height = menuEl.offsetHeight;
+      const top = box.bottom + 6 + height > innerHeight ? Math.max(8, box.top - height - 6) : box.bottom + 6;
+      menuEl.style.top = top + 'px';
+      menuEl.style.left = Math.max(8, Math.min(innerWidth - width - 8, box.right - width)) + 'px';
+      trigger.setAttribute('aria-expanded', 'true');
+      menuTrigger = trigger;
+      menuOpenedAt = Date.now();
+      menuEl.querySelector('button').focus({ preventScroll: true });
+    }
+
+    document.getElementById('psb').addEventListener('click', e => {
+      const panel = document.getElementById('pset');
+      panel.hidden = !panel.hidden;
+      e.currentTarget.setAttribute('aria-expanded', String(!panel.hidden));
+    });
+
+    document.addEventListener('keydown', e => {
+      if (e.key === 'Escape') closeMenu(true);
+    });
+    window.addEventListener('scroll', () => {
+      if (Date.now() - menuOpenedAt > 300) closeMenu();   // ignore the scroll that can accompany opening
+    }, { passive: true });
+    window.addEventListener('resize', () => closeMenu());
+
     function render() {
       // Poster tools only show while some posters are missing / not baked in
+      closeMenu();
       apiKeyInput.style.display = loadButton.style.display = missingPosters() ? '' : 'none';
+      document.getElementById('psb').classList.toggle('need', missingPosters());
       copyButton.style.display = Object.keys(posterPaths).some(title => !(title in BAKED_POSTERS)) ? '' : 'none';
 
       const filter = filterEl.value;
@@ -2189,31 +3192,40 @@
       const scope = activeCat === 'all' ? allIndexes : allIndexes.filter(i => items[i].cat === activeCat);
       const stats = statsForItems(scope);
       heroEl.style.setProperty('--ac', activeCat === 'all' ? '#e62429' : CATEGORIES[activeCat][1]);
-      heroEl.innerHTML = `<div class="row"><span class="big">${stats.percent}%</span>${rankBadgeHTML(stats.percent)}`
-        + `<span><b>${formatTime(stats.left)}</b> <span class="lbl">of heroics left</span></span>`
-        + `<span><b>${stats.finished}/${stats.count}</b> <span class="lbl">titles cleared</span></span></div>`
-        + `<div class="bar"><i style="width:${stats.percent}%"></i></div>`
-        + `<div class="lbl" style="margin-top:6px">${activeCat === 'all' ? 'All categories' : CATEGORIES[activeCat][0]}</div>`;
+      heroEl.innerHTML = `<div class="row">${rankBadgeHTML(stats.percent, stats)}`
+        + `<div class="sts"><span class="st"><b>${stats.percent}%</b><span class="lbl">complete</span></span>`
+        + `<span class="st"><b>${formatTime(stats.left)}</b><span class="lbl">of heroics left</span></span>`
+        + `<span class="st"><b>${stats.finished}/${stats.count}</b><span class="lbl">titles cleared</span></span></div></div>`
+        + barHTML(stats.percent)
+        + `<div class="lbl" style="margin-top:8px">${activeCat === 'all' ? 'All categories' : CATEGORIES[activeCat][0]}</div>`;
 
       // Celebrate when the rank goes up (but not when just switching chips)
       const tier = tierOf(stats.percent);
       const rankBadge = heroEl.querySelector('.rk');
+      let rankUp = null;
       if (rankBadge && prevTierByCat[activeCat] !== undefined && tier > prevTierByCat[activeCat]) {
-        rankBadge.classList.add('up');
-        setTimeout(() => burst(rankBadge, true), 60);
+        rankUp = { level: tier + 1, name: RANK_TIERS[tier][1] };
+        rankBadge.classList.add('rk-up');
+        setTimeout(() => rankBadge.classList.remove('rk-up'), 1200);
       }
       prevTierByCat[activeCat] = tier;
+      updateSticky(stats, tier, activeCat === 'all' ? 'All categories' : CATEGORIES[activeCat][0]);
 
       // Medal shelf
       shelfEl.className = 'shelf' + (collapsed.shelf ? ' shut' : '');
+      const medalScroll = shelfEl.querySelector('.mrow') ? shelfEl.querySelector('.mrow').scrollLeft : 0;
       shelfEl.innerHTML = medalShelfHTML(completed, allIndexes);
+      if (shelfEl.querySelector('.mrow')) shelfEl.querySelector('.mrow').scrollLeft = medalScroll;
+      updateMedalCues();
 
       // Category chips
       const chips = [['all', ['All', '#555a70']], ...Object.entries(CATEGORIES)];
+      const chipScroll = chipsEl.scrollLeft;
       chipsEl.innerHTML = chips.map(([id, [label, color]]) => {
         const percent = statsForItems(id === 'all' ? allIndexes : allIndexes.filter(i => items[i].cat === id)).percent;
         return `<button class="chip" style="--c:${color}" data-cat="${id}" aria-pressed="${activeCat === id}">${label}<small>${percent}%</small></button>`;
       }).join('');
+      chipsEl.scrollLeft = chipScroll;
 
       // Sections
       let html = '';
@@ -2265,16 +3277,33 @@
 
       // Pop and confetti for anything that became complete since the last render
       if (prevCompleted) {
+        const fresh = [...completed].filter(key => !prevCompleted.has(key));
+        const freshCat = fresh.find(key => CATEGORIES[key]);
+        const freshPhase = fresh.find(key => key.includes(':'));
+        if (freshCat) {
+          comicPanel('ASSEMBLED!', MEDALS[freshCat][0], CATEGORIES[freshCat][1]);
+        } else if (fresh.includes('doom')) {
+          comicPanel('DOOMSDAY READY!', DOOM_MEDAL[0], DOOM_MEDAL[2]);
+        } else if (rankUp) {
+          comicPanel('LEVEL UP!', `LV ${rankUp.level} · ${rankUp.name}`, '#f7c600');
+        } else if (freshPhase) {
+          const [fcat, fphase] = freshPhase.split(':');
+          const isMcu = fcat === 'mcu';
+          const phaseName = isMcu ? PHASE_NAMES[fphase] : ((SUBS[fcat] || []).find(([id]) => id === fphase) || [])[1];
+          comicPanel(isMcu ? 'PHASE CLEAR!' : 'KAPOW!', phaseName || '', isMcu ? PHASE_COLORS[fphase] : CATEGORIES[fcat][1]);
+        }
         completed.forEach(key => {
           if (prevCompleted.has(key)) return;
           const el = document.querySelector('[data-key="' + key + '"]');
           if (el) {
             el.classList.add('cel');
-            burst(el, !key.includes(':'));   // bigger burst for a whole category
+            setTimeout(() => el.classList.remove('cel'), 1000);
+            if (!key.includes(':')) burst(el, true);   // confetti only for a whole category
           }
           const medal = document.querySelector('[data-medal="' + key + '"]');
           if (medal) {
             medal.classList.add('new');
+            setTimeout(() => medal.classList.remove('new'), 1100);
             if (key === 'doom') burst(medal, true);
           }
         });
@@ -2295,6 +3324,15 @@
     }
 
     document.addEventListener('click', e => {
+      const trigger = e.target.closest('[data-menu]');
+      if (trigger) {
+        const wasOpen = menuTrigger === trigger;
+        closeMenu();
+        if (!wasOpen) openMenu(trigger);
+        return;
+      }
+      if (!e.target.closest('#menu')) closeMenu();
+
       const button = e.target.closest('button');
 
       if (button) {
@@ -2304,17 +3342,27 @@
         if (data.cat) {
           activeCat = data.cat;
           render();
+          // keep the chosen chip in view on phones
+          const chosen = chipsEl.querySelector('[aria-pressed="true"]');
+          if (chosen) {
+            if (chosen.offsetLeft < chipsEl.scrollLeft) chipsEl.scrollLeft = chosen.offsetLeft - 8;
+            else if (chosen.offsetLeft + chosen.offsetWidth > chipsEl.scrollLeft + chipsEl.clientWidth) {
+              chipsEl.scrollLeft = chosen.offsetLeft + chosen.offsetWidth - chipsEl.clientWidth + 12;
+            }
+          }
           return;
         }
 
         // "Mark all watched" / "Clear" for a whole category
         if (data.bulk) {
           const [cat, value] = data.bulk.split(':');
+          const before = snapshotWatched();
           items.forEach((item, i) => {
             if (item.cat === cat) item.parts.forEach((_, j) => setWatched(i, j, value === '1'));
           });
           saveWatched();
           render();
+          offerUndo((value === '1' ? 'Marked all watched in ' : 'Cleared ') + CATEGORIES[cat][0], before);
           return;
         }
 
@@ -2340,6 +3388,7 @@
       const phaseButton = e.target.closest('[data-bp]');
       if (phaseButton) {
         const [phase, value] = phaseButton.dataset.bp.split(':');
+        const before = snapshotWatched();
         const subCat = Object.keys(SUBS).find(c => SUBS[c].some(([id]) => id === phase));
         const entries = /^\d+$/.test(phase) ? phaseEntries(mcuEntriesByPhase(), phase) : subEntries(subCat, phase);
         entries.forEach(([i, js]) => {
@@ -2347,6 +3396,8 @@
         });
         saveWatched();
         render();
+        const phaseName = PHASE_NAMES[phase] || ((SUBS[subCat] || []).find(([id]) => id === phase) || [])[1] || 'section';
+        offerUndo((value === '1' ? 'Marked ' : 'Cleared ') + phaseName, before);
         return;
       }
 
