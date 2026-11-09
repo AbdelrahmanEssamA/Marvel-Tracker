@@ -1,0 +1,4 @@
+User-agent: *
+Allow: /
+
+Sitemap: https://marvel-tracker.itsabdo.workers.dev/sitemap.xml
