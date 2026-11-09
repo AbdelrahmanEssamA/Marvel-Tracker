@@ -3,7 +3,40 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-  <title>Marvel Watch Tracker</title>
+  <title>Marvel Watch Tracker | MCU, Movies &amp; TV Shows</title>
+  <meta name="description" content="Track your Marvel watchlist in one place. Follow the MCU phases, Marvel movies and TV shows across studios, track seasons, and save your viewing progress.">
+  <meta name="robots" content="index, follow, max-image-preview:large">
+  <meta name="theme-color" content="#0c0d12">
+  <link rel="canonical" href="https://marvel-tracker.itsabdo.workers.dev/">
+
+  <meta property="og:type" content="website">
+  <meta property="og:site_name" content="Marvel Watch Tracker">
+  <meta property="og:title" content="Marvel Watch Tracker | MCU, Movies &amp; TV Shows">
+  <meta property="og:description" content="A Marvel movie and TV watchlist covering the MCU, Netflix, ABC, Fox, Sony, animation and more. Track watched titles and seasons in one place.">
+  <meta property="og:url" content="https://marvel-tracker.itsabdo.workers.dev/">
+
+  <meta name="twitter:card" content="summary">
+  <meta name="twitter:title" content="Marvel Watch Tracker | MCU, Movies &amp; TV Shows">
+  <meta name="twitter:description" content="Track Marvel movies and TV shows, follow MCU phases, and keep your viewing progress in one place.">
+
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "WebSite",
+    "name": "Marvel Watch Tracker",
+    "url": "https://marvel-tracker.itsabdo.workers.dev/",
+    "description": "A personal watchlist for Marvel movies and TV shows, with MCU phases, season tracking, and saved viewing progress."
+  }
+  </script>
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "WebPage",
+    "name": "Marvel Watch Tracker",
+    "url": "https://marvel-tracker.itsabdo.workers.dev/",
+    "description": "Track Marvel movies and TV shows across the MCU and other Marvel-related studios and categories."
+  }
+  </script>
   <link href="https://fonts.googleapis.com/css2?family=Bangers&family=Barlow:wght@400;600;700&display=swap" rel="stylesheet">
   <style>
     /* ---- Page, theme colors and title ---- */
@@ -53,6 +86,25 @@
       font: 600 18px Barlow, system-ui, sans-serif;
       letter-spacing: .3px;
     }
+    .seo-intro {
+      margin: 0 0 24px;
+      padding: 14px 16px;
+      border: 1px solid #303443;
+      border-left: 3px solid var(--red);
+      border-radius: 8px;
+      background: rgba(23, 25, 34, .72);
+      color: var(--mute);
+      font-size: 15px;
+      line-height: 1.55;
+    }
+    .seo-intro h2 {
+      margin: 0 0 7px;
+      color: var(--ink);
+      font: 400 23px/1.15 Bangers, Impact, sans-serif;
+      letter-spacing: .4px;
+    }
+    .seo-intro p { margin: 6px 0; }
+    .seo-intro strong { color: var(--ink); }
 
     /* ---- Progress box at the top ---- */
     .hero {
@@ -2080,6 +2132,13 @@
         <button type="button" class="psb" id="psb" aria-label="Poster settings" aria-expanded="false" aria-controls="pset" title="Poster settings">⚙</button>
       </div>
     </header>
+
+    <section class="seo-intro" aria-labelledby="tracker-intro-title">
+      <h2 id="tracker-intro-title">Your Marvel movies and TV watchlist</h2>
+      <p>Keep your Marvel viewing journey organized with one tracker for <strong>MCU movies and series</strong>, arranged across Phases One through Six, alongside Marvel titles from Netflix, ABC, Fox, Sony, animation, the Blade trilogy and other releases.</p>
+      <p>Mark movies as watched, follow TV shows season by season, filter your list by viewing status or Doomsday essentials, and keep an eye on your overall progress. You can also customize posters and back up or restore your tracker data.</p>
+      <p><strong>Your progress stays in this browser.</strong> Use the built-in backup option before clearing browser data or moving to a different website address.</p>
+    </section>
 
     <!-- Poster settings stay tucked away until the gear is tapped -->
     <div class="tools" id="pset" hidden>
