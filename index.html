@@ -2056,6 +2056,14 @@
         padding: 0 22px 0 26px;
       }
     }
+
+    /* ---- Ad slots (hidden until an ad is configured in the ADS block at the bottom) ---- */
+    .ad { margin: 18px auto; text-align: center; max-width: 100%; overflow: hidden; }
+    .ad[hidden] { display: none; }
+    .ad small { display: block; margin-bottom: 4px; color: var(--mute); font: 600 11px Barlow, system-ui, sans-serif; letter-spacing: 1px; text-transform: uppercase; }
+    .ad-link { display: inline-block; margin: 8px auto 0; padding: 8px 16px; color: var(--ink); background: var(--panel); border: 2px solid var(--mute); font: 700 14px Barlow, system-ui, sans-serif; text-decoration: none; }
+    .ad-link[hidden] { display: none; }
+    .ad-link:hover, .ad-link:focus-visible { border-color: var(--gold); outline: none; }
   </style>
 </head>
 <body>
@@ -2098,10 +2106,18 @@
     </div>
     <div class="shelf" id="shelf"></div>
 
+    <!-- AD: Banner (468x60 on wider screens, 320x50 on phones once configured) -->
+    <div class="ad" id="adBanner" hidden><small>Advertisement</small><div id="adBannerBox"></div></div>
+
     <input type="file" id="pf" accept="image/*" hidden>
     <main id="list"></main>
 
+    <!-- AD: Native Banner -->
+    <div class="ad" id="adNative" hidden><small>Sponsored</small><div id="adNativeBox"></div></div>
+
     <footer>Runtimes are approximate. Shows are tracked by season; hours left counts unchecked titles and seasons. Tap a poster to mark it watched, and the pencil to swap in your own poster. Progress and posters are saved in this browser. This product uses the TMDB API but is not endorsed or certified by TMDB.</footer>
+    <!-- AD: Smartlink -->
+    <div class="ad"><a class="ad-link" id="adSmart" href="#" target="_blank" rel="noopener sponsored nofollow" hidden>Support the site</a></div>
   </div>
 
   <script>
@@ -3757,6 +3773,75 @@
 
     render();
 
+  </script>
+
+  <script>
+    // =====================================================================
+    // ADSTERRA ADS: paste the values from your Adsterra dashboard below.
+    // Anything left as '' is simply skipped, so nothing breaks while empty.
+    // =====================================================================
+    (function () {
+      var ADS = {
+        // Popunder + Social Bar: paste only the script src URL from your code
+        popunder:  '',   // e.g. '//pl12345.profitablecpmrate.com/ab/cd/ef/abcdef.js'
+        socialBar: '',   // e.g. '//pl12345.profitablecpmrate.com/12/34/56/123456.js'
+
+        // Native Banner: src from the code, and the container id (container-XXXX)
+        nativeBanner: {
+          src: 'https://bancadeltempoidea.org/21/a0b24e707890f1d3c643ba3868b95a64',
+          containerId: 'container-a0b24e707890f1d3c643ba3868b95a64'
+        },
+
+        // Banner: one key per size (Adsterra gives a separate key for each size)
+        // The 468x60 banner needs about 500px of screen width, so it shows on tablets/desktops only.
+        // For phones, create a 320x50 banner in Adsterra and fill in bannerMobile.
+        bannerDesktop: { key: '4c32992b6907bd922542d7955b37988b', src: 'https://bancadeltempoidea.org/22/4c32992b6907bd922542d7955b37988b', width: 468, height: 60 },
+        bannerMobile:  { key: '', src: '', width: 320, height: 50 },
+
+        // Smartlink: the direct link from your dashboard
+        smartlink: 'https://directyp.org/4/dbe3f6d7c4c097f0fa6714284800524b'
+      };
+
+      function addScript(src, parent, attrs) {
+        var el = document.createElement('script');
+        el.src = src;
+        el.async = true;
+        el.setAttribute('data-cfasync', 'false');
+        if (attrs) Object.keys(attrs).forEach(function (k) { el[k] = attrs[k]; });
+        (parent || document.body).appendChild(el);
+      }
+
+      // Social Bar and Popunder (page-wide, no slot needed)
+      if (ADS.socialBar) addScript(ADS.socialBar);
+      if (ADS.popunder) addScript(ADS.popunder);
+
+      // Banner: pick the size by screen width
+      var wide = window.innerWidth >= ADS.bannerDesktop.width + 32;
+      var b = wide ? ADS.bannerDesktop : ADS.bannerMobile;
+      if (b.key && b.src) {
+        document.getElementById('adBanner').hidden = false;
+        window.atOptions = { key: b.key, format: 'iframe', height: b.height, width: b.width, params: {} };
+        addScript(b.src, document.getElementById('adBannerBox'));
+      }
+
+      // Native Banner
+      var n = ADS.nativeBanner;
+      if (n.src && n.containerId) {
+        var box = document.getElementById('adNativeBox');
+        var holder = document.createElement('div');
+        holder.id = n.containerId;
+        box.appendChild(holder);
+        document.getElementById('adNative').hidden = false;
+        addScript(n.src, box);
+      }
+
+      // Smartlink
+      if (ADS.smartlink) {
+        var a = document.getElementById('adSmart');
+        a.href = ADS.smartlink;
+        a.hidden = false;
+      }
+    })();
   </script>
 </body>
 </html>
