@@ -1049,6 +1049,53 @@
     .cl[aria-expanded="false"] .chev::before {
       transform: translate(-50%, -50%) rotate(-90deg);
     }
+  
+    /* ---- Avengers: Doomsday essentials: Doom-green glow ---- */
+    .c.doom:not(.done) {
+      border-color: #35d07f;
+      box-shadow: 0 0 0 1px #35d07f, 0 0 20px -4px rgba(53, 208, 127, .7);
+    }
+    .c.doom:not(.done):hover {
+      border-color: #7dffb4;
+      box-shadow: 0 0 0 1px #7dffb4, 0 0 30px -2px rgba(90, 255, 160, .85);
+    }
+    .c.doom .pz::before {
+      content: "";
+      position: absolute;
+      inset: 0;
+      z-index: 1;
+      pointer-events: none;
+      background: linear-gradient(180deg, rgba(16, 150, 85, 0) 45%, rgba(16, 150, 85, .5) 100%);
+    }
+    .c.doom.done .pz::before {
+      opacity: .5;
+    }
+    .doom-tag {
+      position: absolute;
+      top: 0;
+      left: 0;
+      z-index: 2;
+      font: 400 13px Bangers, cursive;
+      font-style: normal;
+      letter-spacing: 1.5px;
+      color: #03140a;
+      background: #35d07f;
+      padding: 1px 12px 1px 7px;
+      clip-path: polygon(0 0, 100% 0, calc(100% - 7px) 100%, 0 100%);
+      pointer-events: none;
+    }
+    .c.doom .stamp {
+      z-index: 2;
+    }
+    @keyframes doomglow {
+      0%, 100% { box-shadow: 0 0 0 1px #35d07f, 0 0 14px -4px rgba(53, 208, 127, .55); }
+      50% { box-shadow: 0 0 0 1px #5df0a0, 0 0 26px -2px rgba(80, 255, 150, .85); }
+    }
+    @media (prefers-reduced-motion: no-preference) {
+      .c.doom:not(.done):not(.flash) {
+        animation: doomglow 3.2s ease-in-out infinite;
+      }
+    }
   </style>
 </head>
 <body>
@@ -1116,6 +1163,9 @@
       blade: ['Daywalker', '🗡️'],
       run:   ['Completionist', '🦆'],
     };
+
+    // Extra medal: earned once every Doomsday essential (DOOM_TITLES) is watched
+    const DOOM_MEDAL = ['Doomsday Ready', '☠️', '#35d07f'];
 
     // Overall rank tiers: [minimum percent, name, symbol]
     const RANK_TIERS = [
@@ -1373,6 +1423,14 @@
     });
 
     // A few MCU titles are shorter specials rather than full movies or shows
+    // Disney+'s official "Countdown to Doomsday" list, plus WandaVision
+    const DOOM_TITLES = [
+      'X-Men', 'X2', 'Captain America: The First Avenger', 'The Avengers',
+      'Avengers: Infinity War', 'Avengers: Endgame', 'Loki', 'WandaVision',
+      'Shang-Chi', 'Spider-Man: No Way Home', 'Doctor Strange in the Multiverse of Madness',
+      'Black Panther: Wakanda Forever', 'Deadpool & Wolverine', 'Captain America: Brave New World',
+      'Thunderbolts*', 'The Fantastic Four: First Steps',
+    ];
     const SPECIAL_TITLES = ['Werewolf by Night', 'The Guardians Holiday Special', 'The Punisher: One Last Kill'];
     items.forEach(item => {
       if (SPECIAL_TITLES.includes(item.title)) item.tag = 'Special';
@@ -1634,6 +1692,9 @@
         const stats = statsForItems(allIndexes.filter(i => items[i].cat === cat));
         if (stats.count > 0 && stats.finished === stats.count) set.add(cat);
       });
+
+      const doomStats = statsForItems(allIndexes.filter(i => DOOM_TITLES.includes(items[i].title)));
+      if (doomStats.count > 0 && doomStats.finished === doomStats.count) set.add('doom');
 
       const phases = mcuEntriesByPhase();
       for (let phase = 1; phase <= LAST_PHASE; phase++) {
@@ -2027,12 +2088,14 @@
 
       const cardClass = isDone ? 'done' : watchedCount ? 'part' : '';
       const flashClass = flashIndex === itemIndex ? 'flash' : '';
+      const isDoom = DOOM_TITLES.includes(item.title);
       const detail = item.isShow
         ? watchedCount + '/' + indexes.length + ' seasons · ' + formatTime(stats.left) + ' left'
         : (item.tag ? item.tag + ' · ' : '') + formatTime(item.parts[0].minutes);
 
-      return `<article class="c ${cardClass} ${flashClass}">`
+      return `<article class="c ${cardClass} ${flashClass} ${isDoom ? 'doom' : ''}"${isDoom ? ' title="Avengers: Doomsday essential"' : ''}>`
         + `<div class="pz" role="button" tabindex="0" data-tg="${itemIndex}" data-js="${indexes.join(',')}" aria-pressed="${isDone}" aria-label="Toggle watched: ${item.title}" style="${background}">`
+        + (isDoom ? '<i class="doom-tag">☠ DOOM</i>' : '')
         + (poster ? '' : `<span class="tt">${item.title}</span>`)
         + `<b class="stamp">${item.isShow ? 'DONE!' : 'WATCHED'}</b>`
         + `<button class="up" data-p="${itemIndex}" aria-label="Change poster for ${item.title}">✎</button>`
@@ -2073,12 +2136,12 @@
 
     function medalShelfHTML(completed, allIndexes) {
       const cats = Object.keys(CATEGORIES);
-      const earned = cats.filter(cat => completed.has(cat)).length;
+      const earned = cats.filter(cat => completed.has(cat)).length + (completed.has('doom') ? 1 : 0);
       const isShut = !!collapsed.shelf;
 
       const header = '<div class="shl">'
         + `<button type="button" class="cl" data-col="shelf" aria-expanded="${!isShut}"><span class="chev">${isShut ? '▸' : '▾'}</span>Medals</button>`
-        + `<small>${earned}/${cats.length} earned</small></div>`;
+        + `<small>${earned}/${cats.length + 1} earned</small></div>`;
       if (isShut) return header;
 
       const medals = cats.map(cat => {
@@ -2094,6 +2157,17 @@
           + (on ? '' : `<span class="mp">${percent}%</span>`)
           + `</button>`;
       });
+      // Doomsday Ready medal goes last
+      const [doomName, doomIcon, doomColor] = DOOM_MEDAL;
+      const doomOn = completed.has('doom');
+      const doomPercent = statsForItems(allIndexes.filter(i => DOOM_TITLES.includes(items[i].title))).percent;
+      medals.push(`<button type="button" class="medal ${doomOn ? 'on' : ''}" data-medal="doom" style="--c:${doomColor}"`
+        + ` title="Avengers: Doomsday essentials: ${doomOn ? 'earned' : doomPercent + '% done'}"`
+        + ` aria-label="${doomName} medal, ${doomOn ? 'earned' : doomPercent + '% of the Doomsday essentials'}">`
+        + `<span class="md"><span class="mi">${doomOn ? doomIcon : '🔒'}</span></span>`
+        + `<span class="mn">${doomName}</span>`
+        + (doomOn ? '' : `<span class="mp">${doomPercent}%</span>`)
+        + `</button>`);
       return header + medals.join('');
     }
 
@@ -2199,7 +2273,10 @@
             burst(el, !key.includes(':'));   // bigger burst for a whole category
           }
           const medal = document.querySelector('[data-medal="' + key + '"]');
-          if (medal) medal.classList.add('new');
+          if (medal) {
+            medal.classList.add('new');
+            if (key === 'doom') burst(medal, true);
+          }
         });
       }
       prevCompleted = completed;
