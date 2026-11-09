@@ -1232,7 +1232,7 @@
     input[type=password] {
       width: 190px;
     }
-    #tb, #tc {
+    #tb, #tc, #tbk, #trs {
       font: 700 14px Barlow, system-ui, sans-serif;
       color: #000;
       background: var(--ink);
@@ -2086,6 +2086,9 @@
       <input id="tk" type="password" placeholder="TMDB API key (v3)" aria-label="TMDB API key">
       <button id="tb">Load posters</button>
       <button id="tc" type="button">Copy poster data</button>
+      <button id="tbk" type="button">Back up progress</button>
+      <button id="trs" type="button">Restore progress</button>
+      <input id="trf" type="file" accept="application/json,.json" hidden>
       <span id="ts"></span>
     </div>
 
@@ -2588,11 +2591,30 @@
       }
     }
 
+    let saveWarned = false;
     function writeJSON(key, value) {
       try {
         localStorage.setItem(key, JSON.stringify(value));
-      } catch (e) {}
+        return true;
+      } catch (e) {
+        // Storage full or blocked (private mode): tell the person once instead of losing progress silently
+        if (!saveWarned) {
+          saveWarned = true;
+          try {
+            toastMsgEl.textContent = 'Could not save progress in this browser. Use the gear to back it up.';
+            toastEl.classList.add('on');
+            document.getElementById('toastUndo').hidden = true;
+            setTimeout(() => { toastEl.classList.remove('on'); document.getElementById('toastUndo').hidden = false; saveWarned = false; }, 9000);
+          } catch (e2) {}
+        }
+        return false;
+      }
     }
+
+    // Ask the browser not to clear this site's saved data when it is low on space or unused for a while
+    try {
+      if (navigator.storage && navigator.storage.persist) navigator.storage.persist().catch(() => {});
+    } catch (e) {}
 
     // Very old versions saved progress as "<item index>.<part index>".
     // Convert that format to the current "<title>|<part index>" keys.
@@ -2994,6 +3016,41 @@
       navigator.clipboard.writeText(json)
         .then(() => { statusEl.textContent = 'Copied. Paste it to Claude or into BAKED_POSTERS in the file.'; })
         .catch(() => prompt('Copy this poster data:', json));
+    };
+
+    // Back up / restore progress as a file, the only protection that survives a cleared browser
+    document.getElementById('tbk').onclick = () => {
+      const data = JSON.stringify({ app: 'marvel-tracker', saved: new Date().toISOString(), watched: watched, collapsed: collapsed, posters: customPosters });
+      const a = document.createElement('a');
+      a.href = URL.createObjectURL(new Blob([data], { type: 'application/json' }));
+      a.download = 'marvel-tracker-progress.json';
+      document.body.appendChild(a);
+      a.click();
+      a.remove();
+      statusEl.textContent = 'Backup saved. Keep the file somewhere safe.';
+    };
+    const restoreInput = document.getElementById('trf');
+    document.getElementById('trs').onclick = () => restoreInput.click();
+    restoreInput.onchange = () => {
+      const file = restoreInput.files[0];
+      if (!file) return;
+      const reader = new FileReader();
+      reader.onload = () => {
+        try {
+          const d = JSON.parse(reader.result);
+          if (d.app !== 'marvel-tracker' || typeof d.watched !== 'object') throw new Error('bad file');
+          watched = d.watched || {};
+          if (d.collapsed && typeof d.collapsed === 'object') collapsed = d.collapsed;
+          if (d.posters && typeof d.posters === 'object') customPosters = d.posters;
+          saveWatched(); saveCollapsed(); writeJSON('mvposter', customPosters);
+          statusEl.textContent = 'Progress restored.';
+          render();
+        } catch (e) {
+          statusEl.textContent = 'That file is not a valid backup.';
+        }
+        restoreInput.value = '';
+      };
+      reader.readAsText(file);
     };
 
     if (apiKeyInput.value && missingPosters()) {
