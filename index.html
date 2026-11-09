@@ -56,12 +56,28 @@
 
     /* ---- Progress box at the top ---- */
     .hero {
+      position: relative;
       background: #fff4d6;
       color: #14151b;
       border: 4px solid #000;
-      box-shadow: 8px 8px 0 var(--ac, #e62429);
-      padding: 16px 18px;
+      box-shadow: 0 0 0 2px #3a3f55;
+      padding: 26px 18px 16px;
       margin-bottom: 24px;
+    }
+    /* category tab sitting on the top border: it names what the box is measuring */
+    .hero .htab {
+      position: absolute;
+      left: 16px;
+      top: -17px;
+      padding: 5px 14px 3px;
+      font: 400 18px/1 Bangers, cursive;
+      letter-spacing: 1px;
+      color: #fff;
+      text-shadow: 2px 2px 0 #000;
+      background:
+        radial-gradient(circle, rgba(0, 0, 0, .2) 1px, transparent 1.6px) 0 0 / 5px 5px,
+        var(--ac, #e62429);
+      border: 3px solid #000;
     }
     .hero .row {
       display: flex;
@@ -392,6 +408,7 @@
       margin-left: 8px;
     }
     .medal {
+      position: relative;
       background: none;
       border: 0;
       padding: 0;
@@ -403,6 +420,7 @@
       color: var(--ink);
       font: inherit;
     }
+    /* disc: black outline, halftone face, ring that fills with your progress */
     .medal .md {
       position: relative;
       isolation: isolate;
@@ -411,12 +429,15 @@
       border-radius: 50%;
       display: grid;
       place-items: center;
-      background: #23263a;
-      border: 3px solid #8a8fa8;
-      filter: grayscale(1);
-      opacity: .65;
+      border: 4px solid transparent;
+      background:
+        radial-gradient(circle, rgba(0, 0, 0, .22) 1px, transparent 1.6px) 0 0 / 5px 5px padding-box,
+        linear-gradient(#23263a, #23263a) padding-box,
+        conic-gradient(var(--c) calc(var(--p, 0) * 1%), #2f3346 0) border-box;
+      box-shadow: 0 0 0 2px #000;
       transition: transform .15s;
     }
+    /* ribbon tail */
     .medal .md::after {
       content: "";
       position: absolute;
@@ -426,7 +447,7 @@
       width: 24px;
       height: 18px;
       transform: translateX(-50%);
-      background: var(--c);
+      background: #3a3f55;
       clip-path: polygon(0 0, 100% 0, 100% 100%, 50% 72%, 0 100%);
     }
     .medal:hover .md {
@@ -436,24 +457,55 @@
       font-size: 26px;
       line-height: 1;
     }
+    /* locked: you still see which medal it is, just dimmed, with a small lock on the corner */
+    .medal:not(.on) .mi {
+      filter: grayscale(1);
+      opacity: .45;
+    }
+    .medal .lk {
+      position: absolute;
+      top: -7px;
+      right: -9px;
+      display: grid;
+      place-items: center;
+      width: 22px;
+      height: 22px;
+      font-size: 11px;
+      line-height: 1;
+      background: #000;
+      border: 2px solid #3a3f55;
+      border-radius: 50%;
+    }
+    /* percentage pill, only on medals you have started (same idea as the LV tag on the rank badge) */
+    .medal .mp {
+      position: absolute;
+      left: 50%;
+      bottom: -9px;
+      z-index: 2;
+      transform: translateX(-50%);
+      padding: 3px 7px 2px;
+      font: 700 11px/1 Barlow, system-ui, sans-serif;
+      color: #fff;
+      background: #000;
+      border: 2px solid var(--c);
+    }
     .medal .mn {
-      margin-top: 12px;
+      margin-top: 18px;
       font: 700 12.5px/1.15 Barlow, system-ui, sans-serif;
       letter-spacing: .2px;
       text-align: center;
       color: var(--mute);
     }
-    .medal .mp {
-      font-size: 11.5px;
-      color: var(--mute);
-      opacity: .8;
-    }
+    /* earned: same gold gradient and halftone as the COMPLETE ribbon */
     .medal.on .md {
-      filter: none;
-      opacity: 1;
-      border-color: var(--gold);
-      background: radial-gradient(circle at 32% 28%, rgba(255, 255, 255, .55), transparent 42%), linear-gradient(145deg, var(--c), #000 170%);
-      box-shadow: 0 0 0 2px #000, 0 0 8px -3px color-mix(in srgb, var(--gold) 55%, transparent);
+      background:
+        radial-gradient(circle, rgba(0, 0, 0, .2) 1px, transparent 1.6px) 0 0 / 5px 5px padding-box,
+        linear-gradient(145deg, var(--c), #000 170%) padding-box,
+        linear-gradient(180deg, #ffe680, var(--gold) 50%, #d9a800) border-box;
+      box-shadow: 0 0 0 2px #000, 0 0 11px -2px color-mix(in srgb, var(--gold) 60%, transparent);
+    }
+    .medal.on .md::after {
+      background: var(--c);
     }
     .medal.on .mn {
       color: var(--gold);
@@ -473,6 +525,52 @@
         transform: scale(1) rotate(0);
       }
     }
+    /* medal info card */
+    .minfo {
+      width: 250px;
+      max-width: calc(100vw - 16px);
+      padding: 12px 14px 14px;
+    }
+    .minfo .mih {
+      display: flex;
+      align-items: baseline;
+      justify-content: space-between;
+      gap: 12px;
+      margin-bottom: 6px;
+    }
+    .minfo .mih b {
+      font: 400 22px/1 Bangers, cursive;
+      letter-spacing: 1px;
+    }
+    .minfo .mih span {
+      font: 700 12px/1 Barlow, system-ui, sans-serif;
+      color: var(--mute);
+    }
+    .minfo .mih span.on {
+      color: var(--gold);
+    }
+    .minfo p {
+      margin: 0 0 10px;
+      font: 600 14px/1.35 Barlow, system-ui, sans-serif;
+      color: var(--ink);
+    }
+    .minfo .mim {
+      margin: 8px 0 12px;
+      font-size: 13px;
+      color: var(--mute);
+    }
+    .minfo .pbar {
+      height: 16px;
+      border-width: 2px;
+    }
+    .minfo .pbar i {
+      border-right-width: 2px;
+    }
+    .minfo button {
+      min-height: 44px;
+      text-align: center;
+      border: 2px solid #3a3f55;
+    }
     .lbl {
       color: #5b5d6a;
       font-size: 14px;
@@ -485,7 +583,6 @@
       background:
         radial-gradient(circle, rgba(0, 0, 0, .08) 1px, transparent 1.6px) 0 0 / 6px 6px,
         #fff;
-      overflow: hidden;
     }
     .pbar i {
       display: block;
@@ -786,8 +883,56 @@
       gap: 8px;
       margin-bottom: 16px;
     }
-    .nav select {
+    .nav .dd {
       flex: none;
+    }
+    .ddb {
+      display: inline-flex;
+      align-items: center;
+      gap: 12px;
+      padding: 7px 12px;
+      font: 400 18px/1.15 Bangers, cursive;
+      letter-spacing: 1px;
+      color: var(--ink);
+      background: #1d2030;
+      border: 2px solid #5a5f78;
+      box-shadow: 3px 3px 0 #000;
+      cursor: pointer;
+      transition: transform .12s, box-shadow .12s;
+    }
+    .ddb:hover,
+    .ddb[aria-expanded="true"] {
+      border-color: var(--ink);
+    }
+    .ddb:hover {
+      transform: translate(-1px, -1px);
+      box-shadow: 4px 4px 0 #000;
+    }
+    .ddb .ddc {
+      width: 0;
+      height: 0;
+      border-left: 5px solid transparent;
+      border-right: 5px solid transparent;
+      border-top: 7px solid currentColor;
+      transition: transform .15s;
+    }
+    .ddb[aria-expanded="true"] .ddc {
+      transform: rotate(180deg);
+    }
+    .ddm {
+      min-width: 190px;
+    }
+    .ddm button[aria-selected="true"] {
+      background: #23263a;
+    }
+    .ddm .ddoom {
+      box-shadow: inset 4px 0 0 #35d07f;
+    }
+    .ddm button[aria-selected="true"]::after {
+      content: "✓";
+      float: right;
+      margin-left: 16px;
+      color: var(--ink);
     }
     .nav .chips {
       flex: 1;
@@ -924,26 +1069,12 @@
       align-items: baseline;
       gap: 6px;
     }
-    .medal:not(.on) .md {
-      filter: none;
-      opacity: 1;
-      border: 4px solid transparent;
-      background:
-        linear-gradient(#23263a, #23263a) padding-box,
-        conic-gradient(var(--c) calc(var(--p, 0) * 1%), #3a3f55 0) border-box;
-    }
-    .medal:not(.on) .md::after {
-      background: #3a3f55;
-    }
-    .medal:not(.on) .mi {
-      opacity: .75;
-    }
 
 
     /* ---- Masthead: slim comic-cover title over muted speed lines ---- */
     .masthead {
       position: relative;
-      margin: 0 0 24px;
+      margin: 0 0 32px;
       padding: 12px 18px 12px;
       background:
         linear-gradient(90deg, transparent 40%, rgba(0, 0, 0, .45)),
@@ -1009,7 +1140,7 @@
     @media (max-width: 600px) {
       .masthead {
         padding: 10px 12px;
-        margin-bottom: 16px;
+        margin-bottom: 30px;
       }
       .masthead h1 {
         -webkit-text-stroke: 2px #000;
@@ -1565,7 +1696,7 @@
     /* ---- Mobile: compact rank badge beside the percentage, full-width medal shelf ---- */
     @media (max-width: 600px) {
       .hero {
-        padding: 12px 12px;
+        padding: 24px 12px 12px;
       }
       .hero .row {
         flex-direction: column;
@@ -1748,6 +1879,10 @@
       border-color: #35d07f;
       box-shadow: 0 0 0 1px #35d07f, 0 0 20px -4px rgba(53, 208, 127, .7);
     }
+    .c.doom.done {
+      border-color: #35d07f;
+      box-shadow: 0 0 0 1px #35d07f, 0 0 16px -4px rgba(53, 208, 127, .6);
+    }
     .c.doom:not(.done):hover {
       border-color: #7dffb4;
       box-shadow: 0 0 0 1px #7dffb4, 0 0 30px -2px rgba(90, 255, 160, .85);
@@ -1823,14 +1958,9 @@
 
     /* ---- Phones: keep the glows tight so they don't wash over the page ---- */
     @media (max-width: 600px) {
-      .c.done,
-      .c.done:hover {
+      .c.done:not(.doom),
+      .c.done:not(.doom):hover {
         box-shadow: none;
-      }
-      .c.doom:not(.done),
-      .c.doom:not(.done):not(.flash) {
-        box-shadow: 0 0 0 1px #35d07f;
-        animation: none;
       }
       .sh {
         flex-wrap: nowrap;
@@ -1890,12 +2020,50 @@
         font-size: 22px;
       }
     }
+
+    /* ---- Category header lockup: title tab with the COMPLETE ribbon tucked behind it ---- */
+    .sh h2 {
+      background:
+        radial-gradient(circle, rgba(0, 0, 0, .2) 1px, transparent 1.6px) 0 0 / 5px 5px,
+        var(--c);
+      border: 3px solid #000;
+      text-shadow: 2px 2px 0 #000;
+    }
+    section.complete .sh h2 {
+      position: relative;
+      z-index: 2;
+      margin-right: 0;
+      text-shadow: 2px 2px 0 #000;
+    }
+    section.complete .sh .shl2 .ok {
+      z-index: 1;
+      margin-left: -16px;
+      margin-right: 12px;
+      padding-left: 34px;
+      clip-path: polygon(0 0, 100% 0, calc(100% - 13px) 50%, 100% 100%, 0 100%);
+    }
+    section.complete .ok::before,
+    .sh.cel .ok::after {
+      clip-path: polygon(0 0, 100% 0, calc(100% - 11px) 50%, 100% 100%, 0 100%);
+    }
+    section.complete .ok .rs:first-child {
+      display: none;
+    }
+    @media (max-width: 600px) {
+      section.complete .sh .shl2 .ok {
+        margin-left: -14px;
+        margin-right: 0;
+        padding: 0 22px 0 26px;
+      }
+    }
   </style>
 </head>
 <body>
   <button type="button" class="stk" id="stk" tabindex="-1" aria-hidden="true" aria-label="Back to top"></button>
   <div class="toast" id="toast" role="status" aria-live="polite"><span id="toastMsg"></span><button type="button" id="toastUndo">UNDO</button></div>
   <div class="menu" id="menu" role="menu" hidden></div>
+  <div class="menu ddm" id="ddm" role="listbox" aria-label="Filter titles" hidden></div>
+  <div class="menu minfo" id="mi" role="dialog" aria-label="Medal details" hidden></div>
   <div class="wrap">
     <header class="masthead">
       <h1><span class="mv">Marvel</span>Watch Tracker</h1>
@@ -1916,12 +2084,16 @@
     <!-- Filled in by render() in the script below -->
     <div class="hero" id="hero"></div>
     <div class="nav">
-      <select id="st" aria-label="Filter titles">
-        <option value="all">Everything</option>
-        <option value="todo">Not finished</option>
-        <option value="part">In progress</option>
-        <option value="done">Finished</option>
-      </select>
+      <div class="dd">
+        <button type="button" class="ddb" id="ddb" aria-haspopup="listbox" aria-expanded="false" aria-label="Filter titles"><span id="ddl">Everything</span><i class="ddc" aria-hidden="true"></i></button>
+        <select id="st" hidden aria-hidden="true" tabindex="-1">
+          <option value="all">Everything</option>
+          <option value="todo">Not finished</option>
+          <option value="part">In progress</option>
+          <option value="done">Finished</option>
+          <option value="doom">Doomsday essentials</option>
+        </select>
+      </div>
       <div class="chips" id="chips"></div>
     </div>
     <div class="shelf" id="shelf"></div>
@@ -2962,7 +3134,7 @@
     function sectionHTML(cat, body, stats, isComplete, isCollapsed) {
       const [label, color] = CATEGORIES[cat];
       const [medalName, medalIcon] = MEDALS[cat];
-      const medalText = isComplete ? `<b class="ok"><span class="rs">★</span><span class="rw">COMPLETE</span><span class="rs">★</span></b> ` : '';
+      const medalText = isComplete ? `<b class="ok"><span class="rs">★</span><span class="rw">COMPLETED</span><span class="rs">★</span></b> ` : '';
       const content = isCollapsed
         ? ''
         : body || '<div class="grid"><div class="empty">Nothing matches this filter.</div></div>';
@@ -2977,6 +3149,8 @@
         + `</section>`;
     }
 
+    const medalInfo = {};   // key -> details shown in the medal card
+
     function medalShelfHTML(completed, allIndexes) {
       // One medal per category (Fox has one per sub-section instead); Doomsday Ready goes last
       const list = [];
@@ -2984,22 +3158,26 @@
         if (cat === 'fox') {
           FOX_SUBS.forEach(([id, subName]) => {
             const [name, icon, color] = SUB_MEDALS['fox:' + id];
-            list.push({ key: 'fox:' + id, cat, name, icon, color, label: subName,
-              percent: statsForEntries(subEntries('fox', id)).percent });
+            const st = statsForEntries(subEntries('fox', id));
+            list.push({ key: 'fox:' + id, cat, name, icon, color, label: subName, req: `Finish every ${subName} title`,
+              percent: st.percent, count: st.count, finished: st.finished });
           });
           // ...plus one for finishing all of Fox
           const [foxName, foxIcon] = MEDALS.fox;
-          list.push({ key: 'fox', cat, name: foxName, icon: foxIcon, color: CATEGORIES.fox[1], label: CATEGORIES.fox[0],
-            percent: statsForItems(allIndexes.filter(i => items[i].cat === 'fox')).percent });
+          const foxStats = statsForItems(allIndexes.filter(i => items[i].cat === 'fox'));
+          list.push({ key: 'fox', cat, name: foxName, icon: foxIcon, color: CATEGORIES.fox[1], label: CATEGORIES.fox[0], req: 'Finish every Fox title',
+            percent: foxStats.percent, count: foxStats.count, finished: foxStats.finished });
         } else {
           const [name, icon] = MEDALS[cat];
-          list.push({ key: cat, cat, name, icon, color: CATEGORIES[cat][1], label: CATEGORIES[cat][0],
-            percent: statsForItems(allIndexes.filter(i => items[i].cat === cat)).percent });
+          const st = statsForItems(allIndexes.filter(i => items[i].cat === cat));
+          list.push({ key: cat, cat, name, icon, color: CATEGORIES[cat][1], label: CATEGORIES[cat][0], req: `Finish every ${CATEGORIES[cat][0]} title`,
+            percent: st.percent, count: st.count, finished: st.finished });
         }
       });
       const [doomName, doomIcon, doomColor] = DOOM_MEDAL;
-      list.push({ key: 'doom', name: doomName, icon: doomIcon, color: doomColor, label: 'the Doomsday essentials',
-        percent: statsForItems(allIndexes.filter(i => DOOM_TITLES.includes(items[i].title))).percent });
+      const doomStats = statsForItems(allIndexes.filter(i => DOOM_TITLES.includes(items[i].title)));
+      list.push({ key: 'doom', name: doomName, icon: doomIcon, color: doomColor, label: 'the Doomsday essentials', req: 'Finish the Doomsday essentials',
+        percent: doomStats.percent, count: doomStats.count, finished: doomStats.finished });
 
       const earned = list.filter(m => completed.has(m.key)).length;
       const isShut = !!collapsed.shelf;
@@ -3014,15 +3192,17 @@
       // earned medals first, then the ones closest to unlocking
       const shown = [...list.filter(m => completed.has(m.key)), ...list.filter(m => !completed.has(m.key)).sort((a, b) => b.percent - a.percent)];
 
+      shown.forEach(m => { medalInfo[m.key] = { ...m, earned: completed.has(m.key) }; });
+
       const medals = shown.map(m => {
         const on = completed.has(m.key);
-        return `<button type="button" class="medal ${on ? 'on' : ''}"${m.cat ? ` data-cat="${m.cat}"` : ''} data-medal="${m.key}" style="--c:${m.color};--p:${m.percent}"`
+        return `<button type="button" class="medal ${on ? 'on' : ''}" data-medal="${m.key}" style="--c:${m.color};--p:${m.percent}" aria-haspopup="dialog"`
           + ` title="${m.label}: ${on ? 'earned' : m.percent + '% done'}"`
           + ` aria-label="${m.name} medal, ${on ? 'earned' : m.percent + '% of ' + m.label}">`
-          + `<span class="md"><span class="mi">${on ? m.icon : '🔒'}</span></span>`
-          + `<span class="mn">${m.name}</span>`
-          + (on ? '' : `<span class="mp">${m.percent}%</span>`)
-          + `</button>`;
+          + `<span class="md"><span class="mi">${m.icon}</span>`
+          + (on ? '' : `<span class="lk" aria-hidden="true">🔒</span>`)
+          + (!on && m.percent > 0 ? `<span class="mp">${m.percent}%</span>` : '')
+          + `</span><span class="mn">${m.name}</span></button>`;
       });
       return header + `<div class="mrow">${medals.join('')}</div>`;
     }
@@ -3146,6 +3326,7 @@
 
     function openMenu(trigger) {
       closeMenu();
+      closeDropdown();
       const [kind, id] = trigger.dataset.menu.split(':');
       const attr = kind === 'bulk' ? 'data-bulk' : 'data-bp';
       menuEl.innerHTML = `<button type="button" role="menuitem" ${attr}="${id}:1">Mark all watched</button>`
@@ -3177,9 +3358,136 @@
     }, { passive: true });
     window.addEventListener('resize', () => closeMenu());
 
+
+    // ---------------------------------------------------------------------
+    // Our own dropdown for the "Everything / Not finished / ..." filter
+    // ---------------------------------------------------------------------
+
+    const ddBtn = document.getElementById('ddb');
+    const ddLabel = document.getElementById('ddl');
+    const ddMenu = document.getElementById('ddm');
+    let ddOpenedAt = 0;
+
+    function closeDropdown(returnFocus) {
+      if (ddMenu.hidden) return;
+      ddMenu.hidden = true;
+      ddBtn.setAttribute('aria-expanded', 'false');
+      if (returnFocus) ddBtn.focus();
+    }
+
+    function openDropdown() {
+      closeMenu();
+      ddMenu.innerHTML = [...filterEl.options].map(o =>
+        `<button type="button" role="option" data-dd="${o.value}"${o.value === 'doom' ? ' class="ddoom"' : ''} aria-selected="${o.value === filterEl.value}">${o.textContent}</button>`).join('');
+      ddMenu.hidden = false;
+      const box = ddBtn.getBoundingClientRect();
+      const height = ddMenu.offsetHeight;
+      const top = box.bottom + 6 + height > innerHeight ? Math.max(8, box.top - height - 6) : box.bottom + 6;
+      ddMenu.style.top = top + 'px';
+      ddMenu.style.left = Math.max(8, Math.min(innerWidth - ddMenu.offsetWidth - 8, box.left)) + 'px';
+      ddBtn.setAttribute('aria-expanded', 'true');
+      ddOpenedAt = Date.now();
+      (ddMenu.querySelector('[aria-selected="true"]') || ddMenu.querySelector('button')).focus({ preventScroll: true });
+    }
+
+    function chooseFilter(value) {
+      filterEl.value = value;
+      ddLabel.textContent = value === 'doom' ? 'Doomsday' : filterEl.options[filterEl.selectedIndex].textContent;
+      closeDropdown(true);
+      filterEl.dispatchEvent(new Event('change'));
+    }
+
+    ddMenu.addEventListener('click', e => {
+      const option = e.target.closest('[data-dd]');
+      if (option) chooseFilter(option.dataset.dd);
+    });
+    ddBtn.addEventListener('click', () => {
+      if (ddMenu.hidden) openDropdown();
+      else closeDropdown();
+    });
+    document.addEventListener('click', e => {
+      if (!ddMenu.hidden && !e.target.closest('#ddm, #ddb')) closeDropdown();
+    });
+    document.addEventListener('keydown', e => {
+      if (ddMenu.hidden) return;
+      const buttons = [...ddMenu.querySelectorAll('button')];
+      const at = buttons.indexOf(document.activeElement);
+      if (e.key === 'Escape') {
+        closeDropdown(true);
+      } else if (e.key === 'ArrowDown') {
+        e.preventDefault();
+        buttons[(at + 1) % buttons.length].focus();
+      } else if (e.key === 'ArrowUp') {
+        e.preventDefault();
+        buttons[(at - 1 + buttons.length) % buttons.length].focus();
+      } else if (e.key === 'Home') {
+        e.preventDefault();
+        buttons[0].focus();
+      } else if (e.key === 'End') {
+        e.preventDefault();
+        buttons[buttons.length - 1].focus();
+      }
+    });
+    window.addEventListener('scroll', () => {
+      if (Date.now() - ddOpenedAt > 300) closeDropdown();
+    }, { passive: true });
+    window.addEventListener('resize', () => closeDropdown());
+
+
+    // ---------------------------------------------------------------------
+    // Medal card: tap a medal to see what it takes
+    // ---------------------------------------------------------------------
+
+    const miEl = document.getElementById('mi');
+    let miTrigger = null;
+    let miOpenedAt = 0;
+
+    function closeMedalInfo(returnFocus) {
+      if (miEl.hidden) return;
+      miEl.hidden = true;
+      if (miTrigger) {
+        miTrigger.setAttribute('aria-expanded', 'false');
+        if (returnFocus && document.contains(miTrigger)) miTrigger.focus();
+      }
+      miTrigger = null;
+    }
+
+    function openMedalInfo(trigger) {
+      const m = medalInfo[trigger.dataset.medal];
+      if (!m) return;
+      closeMenu();
+      closeDropdown();
+      closeMedalInfo();
+      miEl.innerHTML = `<div class="mih"><b>${m.name}</b><span class="${m.earned ? 'on' : ''}">${m.earned ? 'Earned' : m.percent + '%'}</span></div>`
+        + `<p>${m.req}</p>`
+        + `<div style="--ac:${m.color}">${barHTML(m.percent)}</div>`
+        + `<p class="mim">${m.earned ? `All ${m.count} done` : `${m.count - m.finished} of ${m.count} to go`}</p>`
+        + (m.cat ? `<button type="button" data-cat="${m.cat}">Show ${CATEGORIES[m.cat][0]}</button>` : '');
+      miEl.hidden = false;
+      const box = trigger.getBoundingClientRect();
+      const height = miEl.offsetHeight;
+      const top = box.bottom + 8 + height > innerHeight ? Math.max(8, box.top - height - 8) : box.bottom + 8;
+      miEl.style.top = top + 'px';
+      miEl.style.left = Math.max(8, Math.min(innerWidth - miEl.offsetWidth - 8, box.left + box.width / 2 - miEl.offsetWidth / 2)) + 'px';
+      trigger.setAttribute('aria-expanded', 'true');
+      miTrigger = trigger;
+      miOpenedAt = Date.now();
+      miEl.tabIndex = -1;
+      miEl.focus({ preventScroll: true });
+    }
+
+    document.addEventListener('keydown', e => {
+      if (e.key === 'Escape') closeMedalInfo(true);
+    });
+    window.addEventListener('scroll', () => {
+      if (Date.now() - miOpenedAt > 300) closeMedalInfo();
+    }, { passive: true });
+    window.addEventListener('resize', () => closeMedalInfo());
+
     function render() {
       // Poster tools only show while some posters are missing / not baked in
       closeMenu();
+      closeMedalInfo();
       apiKeyInput.style.display = loadButton.style.display = missingPosters() ? '' : 'none';
       document.getElementById('psb').classList.toggle('need', missingPosters());
       copyButton.style.display = Object.keys(posterPaths).some(title => !(title in BAKED_POSTERS)) ? '' : 'none';
@@ -3192,12 +3500,12 @@
       const scope = activeCat === 'all' ? allIndexes : allIndexes.filter(i => items[i].cat === activeCat);
       const stats = statsForItems(scope);
       heroEl.style.setProperty('--ac', activeCat === 'all' ? '#e62429' : CATEGORIES[activeCat][1]);
-      heroEl.innerHTML = `<div class="row">${rankBadgeHTML(stats.percent, stats)}`
+      heroEl.innerHTML = `<span class="htab">${activeCat === 'all' ? 'All categories' : CATEGORIES[activeCat][0]}</span>`
+        + `<div class="row">${rankBadgeHTML(stats.percent, stats)}`
         + `<div class="sts"><span class="st"><b>${stats.percent}%</b><span class="lbl">complete</span></span>`
         + `<span class="st"><b>${formatTime(stats.left)}</b><span class="lbl">of heroics left</span></span>`
         + `<span class="st"><b>${stats.finished}/${stats.count}</b><span class="lbl">titles cleared</span></span></div></div>`
-        + barHTML(stats.percent)
-        + `<div class="lbl" style="margin-top:8px">${activeCat === 'all' ? 'All categories' : CATEGORIES[activeCat][0]}</div>`;
+        + barHTML(stats.percent);
 
       // Celebrate when the rank goes up (but not when just switching chips)
       const tier = tierOf(stats.percent);
@@ -3231,6 +3539,8 @@
       let html = '';
       Object.keys(CATEGORIES).filter(cat => activeCat === 'all' || activeCat === cat).forEach(cat => {
         const indexes = allIndexes.filter(i => items[i].cat === cat);
+        // the Doomsday filter only shows categories that actually contain Doomsday essentials
+        if (filter === 'doom' && !indexes.some(i => DOOM_TITLES.includes(items[i].title))) return;
         const catStats = statsForItems(indexes);
         const catCollapsed = !!collapsed['cat:' + cat];
 
@@ -3257,7 +3567,8 @@
         groups.forEach(group => {
           const visible = group.entries.filter(entry => {
             const state = entryState(entry);
-            return filter === 'all' || state === filter || (filter === 'todo' && state === 'part');
+            return filter === 'all' || state === filter || (filter === 'todo' && state === 'part')
+              || (filter === 'doom' && DOOM_TITLES.includes(items[entry[0]].title));
           });
           if (!visible.length) return;
 
@@ -3332,6 +3643,15 @@
         return;
       }
       if (!e.target.closest('#menu')) closeMenu();
+
+      const medalButton = e.target.closest('.medal');
+      if (medalButton) {
+        const wasOpen = miTrigger === medalButton;
+        closeMedalInfo();
+        if (!wasOpen) openMedalInfo(medalButton);
+        return;
+      }
+      if (!e.target.closest('#mi')) closeMedalInfo();
 
       const button = e.target.closest('button');
 
