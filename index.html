@@ -2884,8 +2884,8 @@
       "The Gifted": "/nshCqszjTNuqhrB53vrSqWO18sE.jpg",
       "Howard the Duck": "/30tnH0hy6S5FjGCfCdnkBd3wqS2.jpg",
       "X-Men": "/bRDAc4GogyS9ci3ow7UnInOcriN.jpg",
-      "X-Men: Apocalypse": "/ikA8UhYdTGpqbatFa93nIf6noSr.jpg",
-      "The Amazing Spider-Man 2": "/bU7nTmvmy0h3VUP01v1T2imgH6N.jpg",
+      "X-Men: Apocalypse": "/2mtQwJKVKQrZgTz49Dizb25eOQQ.jpg",
+      "The Amazing Spider-Man 2": "/dGjoPttcbKR5VWg1jQuNFB247KL.jpg",
       "Ghost Rider": "/4quwR1VwZouD0YF9AaD72kQAjxH.jpg",
       "Ghost Rider: Spirit of Vengeance": "/xEoBT6lYfQNpSpTm8gJMTrQytiw.jpg",
     };
@@ -2922,7 +2922,15 @@
     // Baked posters plus anything fetched earlier in this browser
     let posterPaths = Object.assign({}, BAKED_POSTERS, readJSON('mvpath', {}));
     Object.keys(BAD_POSTERS).forEach(title => {
-      if (posterPaths[title] === BAD_POSTERS[title]) delete posterPaths[title];
+      if (posterPaths[title] === BAD_POSTERS[title]) {
+        // Drop the wrong picture, and use the corrected baked poster if there is one
+        if (BAKED_POSTERS[title] && BAKED_POSTERS[title] !== BAD_POSTERS[title]) posterPaths[title] = BAKED_POSTERS[title];
+        else delete posterPaths[title];
+      }
+    });
+    // A saved empty result ("no poster found") should not hide a baked poster
+    Object.keys(BAKED_POSTERS).forEach(title => {
+      if (posterPaths[title] === '' && BAKED_POSTERS[title]) posterPaths[title] = BAKED_POSTERS[title];
     });
 
     const missingPosters = () => items.some(item => !(customPosters[item.title] || item.title in posterPaths));
