@@ -103,6 +103,23 @@
       font: 400 23px/1.15 Bangers, Impact, sans-serif;
       letter-spacing: .4px;
     }
+    .seo-intro .seo-intro-close {
+      float: right;
+      margin: -5px -7px 4px 10px;
+      padding: 5px 9px;
+      border: 1px solid #454b5d;
+      border-radius: 6px;
+      background: transparent;
+      color: var(--mute);
+      font: 600 12px Barlow, system-ui, sans-serif;
+      cursor: pointer;
+    }
+    .seo-intro .seo-intro-close:hover,
+    .seo-intro .seo-intro-close:focus-visible {
+      color: var(--ink);
+      border-color: var(--red);
+      outline: none;
+    }
     .seo-intro p { margin: 6px 0; }
     .seo-intro strong { color: var(--ink); }
 
@@ -2133,12 +2150,32 @@
       </div>
     </header>
 
-    <section class="seo-intro" aria-labelledby="tracker-intro-title">
+    <section class="seo-intro" id="seo-intro" aria-labelledby="tracker-intro-title">
+      <button class="seo-intro-close" id="seo-intro-close" type="button" aria-label="Close introduction">✕ Close</button>
       <h2 id="tracker-intro-title">Your Marvel movies and TV watchlist</h2>
       <p>Keep your Marvel viewing journey organized with one tracker for <strong>MCU movies and series</strong>, arranged across Phases One through Six, alongside Marvel titles from Netflix, ABC, Fox, Sony, animation, the Blade trilogy and other releases.</p>
       <p>Mark movies as watched, follow TV shows season by season, filter your list by viewing status or Doomsday essentials, and keep an eye on your overall progress. You can also customize posters and back up or restore your tracker data.</p>
       <p><strong>Your progress stays in this browser.</strong> Use the built-in backup option before clearing browser data or moving to a different website address.</p>
     </section>
+
+    <script>
+      (function () {
+        var intro = document.getElementById('seo-intro');
+        var closeButton = document.getElementById('seo-intro-close');
+        var storageKey = 'mvseoIntroDismissed';
+        if (!intro || !closeButton) return;
+        try {
+          if (localStorage.getItem(storageKey) === '1') {
+            intro.hidden = true;
+            return;
+          }
+        } catch (error) {}
+        closeButton.addEventListener('click', function () {
+          intro.hidden = true;
+          try { localStorage.setItem(storageKey, '1'); } catch (error) {}
+        });
+      })();
+    </script>
 
     <!-- Poster settings stay tucked away until the gear is tapped -->
     <div class="tools" id="pset" hidden>
