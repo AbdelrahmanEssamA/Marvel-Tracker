@@ -2388,7 +2388,7 @@
     <input type="file" id="pf" accept="image/*" hidden>
     <main id="list"></main>
 
-    <footer>Runtimes are approximate. Shows are tracked by season; hours left counts unchecked titles and seasons. Tap a poster to mark it watched, and the pencil to swap in your own poster. Progress and posters are saved in this browser. This product uses the TMDB API but is not endorsed or certified by TMDB.</footer>
+    <footer>Runtimes are approximate. Shows are tracked by season; hours left counts unchecked titles and seasons. Tap a poster to mark it watched. Progress and posters are saved in this browser. This product uses the TMDB API but is not endorsed or certified by TMDB.</footer>
   </div>
 
   <script>
@@ -3546,7 +3546,6 @@
         + (poster ? '' : `<span class="tt">${item.title}</span>`)
         + `<b class="stamp">${item.isShow ? 'DONE!' : 'WATCHED'}</b>`
         + (showSrc ? `<i class="src" style="--sc:${CATEGORIES[item.cat][1]}">${CATEGORIES[item.cat][0]}</i>` : '')
-        + `<button class="up" data-p="${itemIndex}" aria-label="Change poster for ${item.title}">✎</button>`
         + `</div>`
         + `<div class="in"><span class="n">${item.title}</span><span class="m">${detail}</span>${seasonButtons}</div>`
         + `</article>`;
@@ -4170,15 +4169,6 @@
           render();
           return;
         }
-      }
-
-      // Pencil button on a poster: pick an image file
-      const pencil = e.target.closest('[data-p]');
-      if (pencil) {
-        posterTarget = items[pencil.dataset.p].title;
-        posterFileInput.value = '';
-        posterFileInput.click();
-        return;
       }
 
       // "Mark phase" / "Clear" for an MCU phase
