@@ -2128,6 +2128,88 @@
     }
 
     /* ---- Ad slots (hidden until an ad is configured in the ADS block at the bottom) ---- */
+    .pz .src {
+      position: absolute; left: 6px; bottom: 6px; z-index: 2;
+      padding: 1px 6px; border-radius: 3px; background: var(--sc);
+      color: #fff; font: 700 10px/1.5 Barlow, system-ui, sans-serif;
+      letter-spacing: .4px; text-transform: uppercase; box-shadow: 0 1px 0 #000;
+      pointer-events: none;
+    }
+    /* ---- View switch: studio grouping vs cross-universe timeline ---- */
+    .vw {
+      position: relative;
+      display: inline-grid;
+      grid-template-columns: 1fr 1fr;
+      margin: 0 0 14px;
+      padding: 3px;
+      background: linear-gradient(180deg, #1b1d29, #0e0f16);
+      border: 2px solid #fff;
+      box-shadow: 3px 3px 0 #000, 0 0 0 1px #3a3f55;
+      overflow: hidden;
+      -webkit-tap-highlight-color: transparent;
+    }
+    .vw::before {
+      content: "";
+      box-sizing: border-box;   /* pseudo-elements skip the global * rule */
+      position: absolute;
+      top: 3px; bottom: 3px; left: 3px;
+      width: calc(50% - 3px);
+      border: 2px solid #000;
+      background:
+        radial-gradient(circle, rgba(0, 0, 0, .22) 1px, transparent 1.6px) 0 0 / 5px 5px,
+        linear-gradient(90deg, #e62429, #ff7a1a 33%, #14b8a6 67%, #3b82f6) 0 0 / 300% 100%;
+      box-shadow: 0 0 12px rgba(230, 36, 41, .5), 1px 1px 0 rgba(0, 0, 0, .6);
+      transition: transform .3s cubic-bezier(.3, 1.4, .5, 1), background-position .3s, box-shadow .3s;
+    }
+    .vw[data-on="timeline"]::before {
+      transform: translateX(100%);
+      background-position: 0 0, 100% 0;
+      box-shadow: 0 0 12px rgba(20, 184, 166, .55), 1px 1px 0 rgba(0, 0, 0, .6);
+    }
+    .vw button {
+      position: relative;
+      z-index: 1;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 6px;
+      min-height: 34px;
+      padding: 6px 14px 4px;
+      border: 0;
+      background: transparent;
+      color: #7d8096;
+      font: 400 16px/1 Bangers, cursive;
+      letter-spacing: 1px;
+      white-space: nowrap;
+      cursor: pointer;
+      touch-action: manipulation;
+      transition: color .2s;
+    }
+    .vw button svg { width: 14px; height: 14px; flex: none; transition: transform .3s; }
+    .vw button:hover { color: var(--ink); }
+    .vw button[aria-pressed="true"] {
+      color: #fff;
+      text-shadow: 1px 1px 0 #000;
+    }
+    .vw button[aria-pressed="true"] svg {
+      transform: scale(1.12);
+      filter: drop-shadow(1px 1px 0 #000);
+    }
+    .vw button:focus-visible { outline: 2px solid var(--focus); outline-offset: -3px; }
+    @media (max-width: 700px) {
+      .vw { display: grid; width: auto; margin: 0 0 14px; }
+      .vw button { min-height: 40px; padding: 8px 14px 6px; }
+    }
+    @media (prefers-reduced-motion: reduce) {
+      .vw::before, .vw button, .vw button svg { transition: none; }
+    }
+    /* ---- One consistent gap between the stacked boxes ---- */
+    :root { --gap: 20px; }
+    .masthead, .seo-intro, .hero, .vw, .nav, .shelf { margin-bottom: var(--gap); }
+    .hero { margin-top: calc(var(--gap) + 13px); }   /* the category tab overhangs the box by 13px */
+    .nav .chips { margin-bottom: -8px; padding-top: 0; }   /* cancels the chips' own bottom padding */
+    .chips[hidden] { display: none; }
+    main > section > .ph:first-child { margin-top: 0; }   /* Timeline starts straight under the medals */
   </style>
 </head>
 <body>
@@ -2185,6 +2267,7 @@
 
     <!-- Filled in by render() in the script below -->
     <div class="hero" id="hero"></div>
+    <div class="vw" id="vw" role="group" aria-label="Viewing order"></div>
     <div class="nav">
       <div class="dd">
         <button type="button" class="ddb" id="ddb" aria-haspopup="listbox" aria-expanded="false" aria-label="Filter titles"><span id="ddl">Everything</span><i class="ddc" aria-hidden="true"></i></button>
@@ -2288,7 +2371,18 @@
     ];
 
     // category id -> its sub-sections
-    const SUBS = { sony: SONY_SUBS, fox: FOX_SUBS };
+    // Cross-universe Timeline view: [id, name, colour]
+    const TL_ERAS = [
+      ['war',  '1940s',                '#b45309'],
+      ['mut',  '1960s–2000s',          '#6366f1'],
+      ['init', '2010–2012',            '#e62429'],
+      ['ny',   '2013–2014',            '#3b6fd8'],
+      ['rise', '2015–2016',            '#8b5cf6'],
+      ['civ',  '2016–2018',            '#14b8a6'],
+      ['inf',  '2018–2023',            '#ec4899'],
+      ['post', '2024 onward',          '#ff7a1a'],
+    ];
+    const SUBS = { sony: SONY_SUBS, fox: FOX_SUBS, tl: TL_ERAS };
 
     // each sub-section gets its own colour and its own "done" title: key -> [colour, title]
     const SUB_STYLE = {
@@ -2301,6 +2395,37 @@
       'fox:f4':     ['#1e88e5', 'FLAME ON!'],
       'fox:dd':     ['#d9480f', 'MAN WITHOUT FEAR'],
     };
+    TL_ERAS.forEach(([id, , color]) => { SUB_STYLE['tl:' + id] = [color, 'ERA CLEAR']; });
+
+    // In-universe order, across studios: [title, optional season indexes (0 = season 1)]
+    const TIMELINE = {
+      war: [['Eyes of Wakanda'], ['Captain America: The First Avenger'], ['Agent Carter (One-Shot)'], ['Agent Carter']],
+      mut: [['X-Men: First Class'], ['X-Men: Days of Future Past'], ['X-Men Origins: Wolverine'], ['X-Men: Apocalypse'],
+            ['Dark Phoenix'], ['Captain Marvel'], ['X-Men'], ['X2'], ['X-Men: The Last Stand']],
+      init: [['Iron Man'], ['The Consultant'], ['The Incredible Hulk'], ['Iron Man 2'], ['Thor'],
+             ['A Funny Thing Happened on the Way to Thor’s Hammer'], ['The Avengers'], ['Item 47']],
+      ny: [['Iron Man 3'], ['All Hail the King'], ['Thor: The Dark World'], ['Agents of S.H.I.E.L.D.', [0]], ['The Wolverine'],
+           ['Captain America: The Winter Soldier'], ['Agents of S.H.I.E.L.D.', [1]],
+           ['Guardians of the Galaxy'], ['Guardians of the Galaxy Vol. 2']],
+      rise: [['Daredevil', [0]], ['Jessica Jones', [0]], ['Avengers: Age of Ultron'], ['Agents of S.H.I.E.L.D.', [2]], ['Ant-Man'],
+             ['Daredevil', [1]], ['Deadpool'], ['Captain America: Civil War'], ['Team Thor'], ['Team Thor: Part 2'],
+             ['Black Widow'], ['Luke Cage', [0]], ['Agents of S.H.I.E.L.D.', [3]]],
+      civ: [['Doctor Strange'], ['Spider-Man: Homecoming'], ['Black Panther'], ['Iron Fist', [0]], ['The Defenders'],
+            ['Thor: Ragnarok'], ['Team Darryl'], ['The Punisher', [0]], ['The New Mutants'], ['Jessica Jones', [1]],
+            ['Luke Cage', [1]], ['Iron Fist', [1]], ['Daredevil', [2]], ['Ant-Man and the Wasp'], ['Deadpool 2'],
+            ['Agents of S.H.I.E.L.D.', [4]], ['Avengers: Infinity War'], ['The Punisher', [1]]],
+      inf: [['Jessica Jones', [2]], ['Avengers: Endgame'], ['Spider-Man: Far From Home'], ['Agents of S.H.I.E.L.D.', [5, 6]]],
+      post: [['WandaVision'], ['The Falcon and the Winter Soldier'], ['Loki', [0]], ['What If…?', [0]], ['Shang-Chi'], ['Eternals'],
+             ['Hawkeye'], ['Spider-Man: No Way Home'], ['Moon Knight'], ['Doctor Strange in the Multiverse of Madness'],
+             ['Ms. Marvel'], ['Thor: Love and Thunder'], ['She-Hulk: Attorney at Law'], ['Werewolf by Night'],
+             ['Black Panther: Wakanda Forever'], ['The Guardians Holiday Special'], ['Ant-Man and the Wasp: Quantumania'],
+             ['Loki', [1]], ['What If…?', [1, 2]], ['Secret Invasion'], ['Guardians of the Galaxy Vol. 3'], ['The Marvels'],
+             ['Echo'], ['Deadpool & Wolverine'], ['Agatha All Along'], ['Daredevil: Born Again', [0]],
+             ['Captain America: Brave New World'], ['Thunderbolts*'], ['Ironheart'], ['The Fantastic Four: First Steps'],
+             ['Marvel Zombies'], ['Wonder Man'], ['The Punisher: One Last Kill'], ['Daredevil: Born Again', [1]],
+             ['VisionQuest'], ['Spider-Man: Brand New Day'], ['Logan']],
+    };
+    let showSrc = false;   // Timeline cards carry a small studio tag
 
 
     // ---------------------------------------------------------------------
@@ -2807,6 +2932,16 @@
       return (Array.isArray(dates) ? dates[only[0]] : dates) || '9999';
     }
 
+    // Timeline entries for one era as [itemIndex, partIndexes] pairs
+    function tlEntries(era) {
+      return (TIMELINE[era] || []).map(([title, parts]) => {
+        const i = items.findIndex(item => item.title === title);
+        return i < 0 ? null : [i, parts || items[i].parts.map((_, j) => j)];
+      }).filter(Boolean);
+    }
+    const tlIndexes = () => [...new Set(TL_ERAS.flatMap(([id]) => tlEntries(id).map(e => e[0])))];
+    const catInfo = id => (id === 'timeline' || id === 'tl') ? ['Timeline', '#14b8a6'] : CATEGORIES[id];
+
     // Which categories and MCU phases are fully watched right now.
     // Categories use their id ('mcu'), phases use 'mcu:<number>'.
     function completedSet() {
@@ -2834,6 +2969,13 @@
         const entries = subEntries(cat, id);
         if (entries.length && statsForEntries(entries).finished === entries.length) set.add(cat + ':' + id);
       }));
+      TL_ERAS.forEach(([id]) => {
+        const entries = tlEntries(id);
+        if (entries.length) {
+          const st = statsForEntries(entries);
+          if (st.finished === st.count) set.add('tl:' + id);
+        }
+      });
       return set;
     }
 
@@ -3037,6 +3179,7 @@
     const statusEl = document.getElementById('ts');
     const posterFileInput = document.getElementById('pf');
 
+    let lastCat = 'all';                // category to return to when leaving the Timeline view
     let activeCat = 'all';              // category chip currently selected
     let posterTarget = null;            // title waiting for an uploaded poster
     let flashIndex = null;              // item that just changed, for the pop animation
@@ -3242,6 +3385,30 @@
         + `</span>`;
     }
 
+    // Posters load only when a card is near the screen: a small file for normal
+    // screens and the larger one for sharp (2x) screens.
+    const TMDB_IMG = 'https://image.tmdb.org/t/p/';
+    const loadedPosters = new Set();
+    const posterCss = path => `background-image:url('${TMDB_IMG}w342${path}');`
+      + `background-image:image-set(url('${TMDB_IMG}w185${path}') 1x,url('${TMDB_IMG}w342${path}') 2x)`;
+    function loadPoster(el) {
+      const path = el.dataset.bg;
+      if (!path) return;
+      loadedPosters.add(path);
+      el.removeAttribute('data-bg');
+      el.setAttribute('style', posterCss(path));
+    }
+    const posterObserver = 'IntersectionObserver' in window
+      ? new IntersectionObserver(entries => entries.forEach(entry => {
+          if (!entry.isIntersecting) return;
+          posterObserver.unobserve(entry.target);
+          loadPoster(entry.target);
+        }), { rootMargin: '800px 0px' })
+      : null;
+    function watchPosters() {
+      listEl.querySelectorAll('.pz[data-bg]').forEach(el => posterObserver ? posterObserver.observe(el) : loadPoster(el));
+    }
+
     function cardHTML(entry) {
       const [itemIndex, only] = entry;
       const item = items[itemIndex];
@@ -3250,11 +3417,14 @@
       const watchedCount = indexes.filter(j => watched[watchKey(itemIndex, j)]).length;
       const isDone = watchedCount === indexes.length;
 
-      const poster = customPosters[item.title]
-        || (posterPaths[item.title] ? 'https://image.tmdb.org/t/p/w342' + posterPaths[item.title] : '');
-      const background = poster
-        ? `background-image:url('${poster}')`
-        : `background-image:linear-gradient(160deg,${CATEGORIES[item.cat][1]},#10111a)`;
+      const custom = customPosters[item.title];
+      const path = posterPaths[item.title];
+      const poster = custom || path || '';
+      let background = `background-image:linear-gradient(160deg,${CATEGORIES[item.cat][1]},#10111a)`;
+      let lazyAttr = '';
+      if (custom) background = `background-image:url('${custom}')`;
+      else if (path && loadedPosters.has(path)) background = posterCss(path);
+      else if (path) { background = 'background-color:#171922'; lazyAttr = ` data-bg="${path}"`; }
 
       const seasonButtons = item.isShow
         ? '<div class="sns">' + indexes.map(j => {
@@ -3272,10 +3442,11 @@
         : (item.tag ? item.tag + ' · ' : '') + formatTime(item.parts[0].minutes);
 
       return `<article class="c ${cardClass} ${flashClass} ${isDoom ? 'doom' : ''}"${isDoom ? ' title="Avengers: Doomsday essential"' : ''}>`
-        + `<div class="pz" role="button" tabindex="0" data-tg="${itemIndex}" data-js="${indexes.join(',')}" aria-pressed="${isDone}" aria-label="Toggle watched: ${item.title}" style="${background}">`
+        + `<div class="pz" role="button" tabindex="0" data-tg="${itemIndex}" data-js="${indexes.join(',')}"${lazyAttr} aria-pressed="${isDone}" aria-label="Toggle watched: ${item.title}" style="${background}">`
         + (isDoom ? '<i class="doom-tag"><svg viewBox="0 0 16 16" aria-hidden="true"><path fill="currentColor" fill-rule="evenodd" d="M8 1C4.4 1 2 3.3 2 6.4c0 1.8.8 3.1 2 3.9V13c0 .6.4 1 1 1h1v-1.5h1V14h2v-1.5h1V14h1c.6 0 1-.4 1-1v-2.7c1.2-.8 2-2.1 2-3.9C14 3.3 11.6 1 8 1zM5.6 8.6a1.4 1.4 0 100-2.8 1.4 1.4 0 000 2.8zm4.8 0a1.4 1.4 0 100-2.8 1.4 1.4 0 000 2.8zM8 9l.9 1.5H7.1z"/></svg><span>DOOM</span></i>' : '')
         + (poster ? '' : `<span class="tt">${item.title}</span>`)
         + `<b class="stamp">${item.isShow ? 'DONE!' : 'WATCHED'}</b>`
+        + (showSrc ? `<i class="src" style="--sc:${CATEGORIES[item.cat][1]}">${CATEGORIES[item.cat][0]}</i>` : '')
         + `<button class="up" data-p="${itemIndex}" aria-label="Change poster for ${item.title}">✎</button>`
         + `</div>`
         + `<div class="in"><span class="n">${item.title}</span><span class="m">${detail}</span>${seasonButtons}</div>`
@@ -3651,6 +3822,26 @@
     }, { passive: true });
     window.addEventListener('resize', () => closeMedalInfo());
 
+    function timelineHTML(filter, completed) {
+      showSrc = true;
+      let body = '';
+      TL_ERAS.forEach(([id]) => {
+        const entries = tlEntries(id);
+        const visible = entries.filter(entry => {
+          const state = entryState(entry);
+          return filter === 'all' || state === filter || (filter === 'todo' && state === 'part')
+            || (filter === 'doom' && DOOM_TITLES.includes(items[entry[0]].title));
+        });
+        if (!visible.length) return;
+        const key = 'tl:' + id;
+        const shut = !!collapsed[key];
+        body += phaseHeaderHTML(key, id, entries, completed.has(key), shut);
+        if (!shut) body += `<div class="grid">${visible.map(cardHTML).join('')}</div>`;
+      });
+      showSrc = false;
+      return `<section style="--c:#14b8a6">${body || '<div class="grid"><div class="empty">Nothing matches this filter.</div></div>'}</section>`;
+    }
+
     function render() {
       // Poster tools only show while some posters are missing / not baked in
       closeMenu();
@@ -3664,10 +3855,10 @@
       const completed = completedSet();
 
       // Progress box at the top
-      const scope = activeCat === 'all' ? allIndexes : allIndexes.filter(i => items[i].cat === activeCat);
+      const scope = activeCat === 'all' ? allIndexes : activeCat === 'timeline' ? tlIndexes() : allIndexes.filter(i => items[i].cat === activeCat);
       const stats = statsForItems(scope);
-      heroEl.style.setProperty('--ac', activeCat === 'all' ? '#e62429' : CATEGORIES[activeCat][1]);
-      heroEl.innerHTML = `<span class="htab">${activeCat === 'all' ? 'All categories' : CATEGORIES[activeCat][0]}</span>`
+      heroEl.style.setProperty('--ac', activeCat === 'all' ? '#e62429' : catInfo(activeCat)[1]);
+      heroEl.innerHTML = `<span class="htab">${activeCat === 'all' ? 'All categories' : catInfo(activeCat)[0]}</span>`
         + `<div class="row">${rankBadgeHTML(stats.percent, stats)}`
         + `<div class="sts"><span class="st"><b>${stats.percent}%</b><span class="lbl">complete</span></span>`
         + `<span class="st"><b>${formatTime(stats.left)}</b><span class="lbl">of heroics left</span></span>`
@@ -3684,7 +3875,7 @@
         setTimeout(() => rankBadge.classList.remove('rk-up'), 1200);
       }
       prevTierByCat[activeCat] = tier;
-      updateSticky(stats, tier, activeCat === 'all' ? 'All categories' : CATEGORIES[activeCat][0]);
+      updateSticky(stats, tier, activeCat === 'all' ? 'All categories' : catInfo(activeCat)[0]);
 
       // Medal shelf
       shelfEl.className = 'shelf' + (collapsed.shelf ? ' shut' : '');
@@ -3695,16 +3886,26 @@
 
       // Category chips
       const chips = [['all', ['All', '#555a70']], ...Object.entries(CATEGORIES)];
+      const onTimeline = activeCat === 'timeline';
+      const vwEl = document.getElementById('vw');
+      vwEl.dataset.on = onTimeline ? 'timeline' : 'studio';
+      const VW_ICONS = {
+        studio: '<svg viewBox="0 0 16 16" aria-hidden="true"><path fill="currentColor" d="M1 1h6v6H1zm8 0h6v6H9zM1 9h6v6H1zm8 0h6v6H9z"/></svg>',
+        timeline: '<svg viewBox="0 0 16 16" aria-hidden="true"><path fill="currentColor" d="M1 7h14v2H1z"/><circle cx="3.5" cy="8" r="2.5" fill="currentColor"/><circle cx="8" cy="8" r="2.5" fill="currentColor"/><circle cx="12.5" cy="8" r="2.5" fill="currentColor"/></svg>',
+      };
+      vwEl.innerHTML = [['studio', 'By studio'], ['timeline', 'Timeline']]
+        .map(([id, label]) => `<button type="button" data-view="${id}" aria-pressed="${(id === 'timeline') === onTimeline}">${VW_ICONS[id]}${label}</button>`).join('');
       const chipScroll = chipsEl.scrollLeft;
-      chipsEl.innerHTML = chips.map(([id, [label, color]]) => {
-        const percent = statsForItems(id === 'all' ? allIndexes : allIndexes.filter(i => items[i].cat === id)).percent;
+      chipsEl.hidden = onTimeline;
+      chipsEl.innerHTML = onTimeline ? '' : chips.map(([id, [label, color]]) => {
+        const percent = statsForItems(id === 'all' ? allIndexes : id === 'timeline' ? tlIndexes() : allIndexes.filter(i => items[i].cat === id)).percent;
         return `<button class="chip" style="--c:${color}" data-cat="${id}" aria-pressed="${activeCat === id}">${label}<small>${percent}%</small></button>`;
       }).join('');
       chipsEl.scrollLeft = chipScroll;
 
       // Sections
       let html = '';
-      Object.keys(CATEGORIES).filter(cat => activeCat === 'all' || activeCat === cat).forEach(cat => {
+      (activeCat === 'timeline' ? [] : Object.keys(CATEGORIES)).filter(cat => activeCat === 'all' || activeCat === cat).forEach(cat => {
         const indexes = allIndexes.filter(i => items[i].cat === cat);
         // the Doomsday filter only shows categories that actually contain Doomsday essentials
         if (filter === 'doom' && !indexes.some(i => DOOM_TITLES.includes(items[i].title))) return;
@@ -3750,7 +3951,9 @@
         html += sectionHTML(cat, body, catStats, completed.has(cat), catCollapsed);
       });
 
+      if (activeCat === 'timeline') html = timelineHTML(filter, completed);
       listEl.innerHTML = html;
+      watchPosters();
       flashIndex = null;
 
       // Pop and confetti for anything that became complete since the last render
@@ -3768,7 +3971,7 @@
           const [fcat, fphase] = freshPhase.split(':');
           const isMcu = fcat === 'mcu';
           const phaseName = isMcu ? PHASE_NAMES[fphase] : ((SUBS[fcat] || []).find(([id]) => id === fphase) || [])[1];
-          comicPanel(isMcu ? 'PHASE CLEAR!' : 'KAPOW!', phaseName || '', isMcu ? PHASE_COLORS[fphase] : CATEGORIES[fcat][1]);
+          comicPanel(isMcu ? 'PHASE CLEAR!' : 'KAPOW!', phaseName || '', isMcu ? PHASE_COLORS[fphase] : catInfo(fcat)[1]);
         }
         completed.forEach(key => {
           if (prevCompleted.has(key)) return;
@@ -3825,6 +4028,14 @@
       if (button) {
         const data = button.dataset;
 
+        // View switch: studio grouping or cross-universe timeline
+        if (data.view) {
+          if (data.view === 'timeline' && activeCat !== 'timeline') { lastCat = activeCat; activeCat = 'timeline'; }
+          else if (data.view === 'studio' && activeCat === 'timeline') activeCat = lastCat;
+          render();
+          return;
+        }
+
         // Category chip or medal: switch to that category
         if (data.cat) {
           activeCat = data.cat;
@@ -3877,7 +4088,7 @@
         const [phase, value] = phaseButton.dataset.bp.split(':');
         const before = snapshotWatched();
         const subCat = Object.keys(SUBS).find(c => SUBS[c].some(([id]) => id === phase));
-        const entries = /^\d+$/.test(phase) ? phaseEntries(mcuEntriesByPhase(), phase) : subEntries(subCat, phase);
+        const entries = /^\d+$/.test(phase) ? phaseEntries(mcuEntriesByPhase(), phase) : subCat === 'tl' ? tlEntries(phase) : subEntries(subCat, phase);
         entries.forEach(([i, js]) => {
           js.forEach(j => setWatched(i, j, value === '1'));
         });
