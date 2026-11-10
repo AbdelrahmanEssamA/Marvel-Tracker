@@ -131,6 +131,42 @@
     .seo-intro p { margin: 6px 0; }
     .seo-intro strong { color: var(--ink); }
 
+    /* ---- Install banner (shown only when the app can be installed) ---- */
+    .install {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      gap: 10px 14px;
+      margin: 0 0 24px;
+      padding: 12px 14px;
+      border: 1px solid #303443;
+      border-left: 3px solid var(--gold);
+      border-radius: 8px;
+      background: rgba(23, 25, 34, .72);
+    }
+    .install[hidden] { display: none; }
+    .install img { width: 44px; height: 44px; border-radius: 10px; flex: none; }
+    .install .it { flex: 1 1 180px; min-width: 0; }
+    .install .it b { display: block; color: var(--ink); font-weight: 700; }
+    .install .it span { color: var(--mute); font-size: 14px; line-height: 1.4; }
+    .install button {
+      padding: 9px 16px;
+      border: 2px solid #000;
+      border-radius: 6px;
+      background: var(--gold);
+      color: #14151b;
+      font: 700 14px Barlow, system-ui, sans-serif;
+      cursor: pointer;
+    }
+    .install button.x {
+      padding: 8px 10px;
+      border: 1px solid #454b5d;
+      background: transparent;
+      color: var(--mute);
+      font-weight: 600;
+    }
+    .install button:focus-visible { outline: 2px solid var(--focus); outline-offset: 2px; }
+
     /* ---- Progress box at the top ---- */
     .hero {
       position: relative;
@@ -2258,6 +2294,65 @@
           intro.hidden = true;
           try { localStorage.setItem(storageKey, '1'); } catch (error) {}
         });
+      })();
+    </script>
+
+    <section class="install" id="install" aria-label="Install app" hidden>
+      <img src="/icons/icon-192.png" alt="" width="44" height="44">
+      <div class="it">
+        <b>Install Marvel Watch Tracker</b>
+        <span id="installText">Add it to your home screen for one-tap access and offline use.</span>
+      </div>
+      <button type="button" id="installBtn">Install</button>
+      <button type="button" class="x" id="installX" aria-label="Dismiss install prompt">Not now</button>
+    </section>
+    <script>
+      (function () {
+        var box = document.getElementById('install');
+        var btn = document.getElementById('installBtn');
+        var text = document.getElementById('installText');
+        var key = 'mvInstallDismissed';
+        var deferred = null;
+        if (!box) return;
+
+        var standalone = matchMedia('(display-mode: standalone)').matches || navigator.standalone === true;
+        var dismissed = false;
+        try { dismissed = localStorage.getItem(key) === '1'; } catch (e) {}
+        if (standalone || dismissed) return;
+
+        function show() { box.hidden = false; }
+        function hide(remember) {
+          box.hidden = true;
+          if (remember) { try { localStorage.setItem(key, '1'); } catch (e) {} }
+        }
+
+        // Android / desktop Chrome and Edge: use the browser's own install prompt
+        window.addEventListener('beforeinstallprompt', function (e) {
+          e.preventDefault();
+          deferred = e;
+          show();
+        });
+        btn.addEventListener('click', function () {
+          if (!deferred) return;
+          deferred.prompt();
+          deferred.userChoice.then(function () { deferred = null; hide(false); });
+        });
+        window.addEventListener('appinstalled', function () { hide(true); });
+        document.getElementById('installX').addEventListener('click', function () { hide(true); });
+
+        // iPhone / iPad Safari has no install prompt, so explain the manual steps
+        var ua = navigator.userAgent;
+        var isIOS = /iphone|ipad|ipod/i.test(ua) || (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
+        var isSafari = /safari/i.test(ua) && !/crios|fxios|edgios|opios/i.test(ua);
+        if (isIOS) {
+          if (isSafari) {
+            text.textContent = 'Tap the Share button, then “Add to Home Screen” to install it like an app.';
+          } else {
+            text.textContent = 'Open this page in Safari, tap Share, then “Add to Home Screen” to install it.';
+          }
+          btn.hidden = true;
+          show();
+        }
       })();
     </script>
 

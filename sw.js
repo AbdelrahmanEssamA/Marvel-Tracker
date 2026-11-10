@@ -1,6 +1,6 @@
 // Marvel Watch Tracker service worker.
 // Bump VERSION whenever you deploy a new index.html so installed copies refresh.
-const VERSION = 'v2';
+const VERSION = 'v3';
 const SHELL_CACHE = 'shell-' + VERSION;
 const RUNTIME_CACHE = 'runtime-' + VERSION;
 const SHELL = [
